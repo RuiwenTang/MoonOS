@@ -1,0 +1,33 @@
+executable("kernel") {
+    link_file = rebase_path("../link64.ld")
+
+
+    configs = []
+
+    ldflags = [
+        "-T",
+        link_file,
+        "-lgcc",
+        "-ffreestanding",
+        "-nostdlib"
+    ]
+
+
+    cflags = [
+        "-nostdlib",
+        "-nostdinc",
+        "-fno-builtin",
+        "-fno-stack-protector",
+        "-nostartfiles",
+        "-nodefaultlibs",
+        "-Wall",
+        "-Wextra",
+        "-finline-functions"
+    ]
+
+
+    sources = [
+        "arch/x86_64/entry.S",
+        "kmain.c"
+    ]
+}

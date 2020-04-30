@@ -1,0 +1,32 @@
+if (target_os == "") {
+    target_os = "moonos"
+}
+
+if (target_cpu == "") {
+    target_cpu = "x86_64"
+}
+
+if (current_os == "") {
+    current_os = target_os
+}
+
+# All binary targets will get this list of configs by default.
+os_shared_binary_target_configs = [
+    "//gn:executable_ldconfig",
+    "//gn:compiler_defaults"
+]
+
+# Apply default list to the binary target types.
+set_defaults("executable") {
+    configs = os_shared_binary_target_configs
+}
+
+set_defaults("static_library") {
+    configs = os_shared_binary_target_configs
+}
+
+set_defaults("shared_library") {
+    configs = os_shared_binary_target_configs
+}
+
+set_default_toolchain("//gn/toolchain:moonos-gccx86_64")
