@@ -1,0 +1,37 @@
+
+executable("loader") {
+    link_file = rebase_path("../link32.ld")
+
+    ldflags = [
+        "-T",
+        link_file,
+        "-shared",
+        ""
+        "-lgcc",
+        "-ffreestanding",
+        "-nostdlib"
+    ]
+
+    cflags = [
+        "-m32",
+        "-nostdlib",
+        "-nostdinc",
+        "-fno-builtin",
+        "-fno-stack-protector",
+        "-nostartfiles",
+        "-nodefaultlibs",
+        "-Wall",
+        "-Wextra",
+        "-finline-functions"
+    ]
+
+
+    sources = [
+        "entry.S",
+        "loader.c",
+    ]
+
+    include_dirs = [
+        "//include"
+    ]
+}

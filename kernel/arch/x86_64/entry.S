@@ -1,3 +1,4 @@
+.code32
 /* Multiboot macros to make a few lines more readable later */
 .set MULTIBOOT_PAGE_ALIGN,        (1 << 0)
 .set MULTIBOOT_MEMORY_INFO,       (1 << 1)

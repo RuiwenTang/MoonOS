@@ -12,7 +12,6 @@ executable("kernel") {
         "-nostdlib"
     ]
 
-
     cflags = [
         "-nostdlib",
         "-nostdinc",
@@ -27,7 +26,29 @@ executable("kernel") {
 
 
     sources = [
-        "arch/x86_64/entry.S",
-        "kmain.c"
+        # libc
+        "libc/string/memcmp.c",
+        "libc/string/memchr.c",
+        "libc/string/memcpy.c",
+        "libc/string/memmove.c",
+        "libc/string/memset.c",
+        "libc/string/strcat.c",
+        "libc/string/strchr.c",
+        "libc/string/strcmp.c",
+        "libc/string/strcoll.c",
+        "libc/string/strcpy.c",
+        "libc/string/strlen.c",
+        "libc/stdio/snprintf.c",
+        "libc/stdio/sprintf.c",
+        "libc/stdio/vsnprintf.c",
+        "libc/stdio/vsprintf.c",
+        "libc/stdlib/atoi.c",
+        # kernel
+        "kmain.c",
+        "arch/x86_64/tty.c"
+    ]
+
+    include_dirs = [
+        "//include"
     ]
 }
