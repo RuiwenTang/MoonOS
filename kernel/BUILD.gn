@@ -10,6 +10,7 @@ executable("kernel") {
         "-lgcc",
         "-ffreestanding",
         "-nostdlib",
+        "-fno-builtin",
         "-z",
         "max-page-size=0x1000"
     ]
@@ -26,7 +27,9 @@ executable("kernel") {
         "-Wextra",
         "-Wframe-larger-than=1024",
         "-Wstack-usage=1024",
-        "-Wno-unknown-warning-option"
+        "-Wno-unknown-warning-option",
+        "-nostdlib",
+        "-fno-builtin",
     ]
 
 

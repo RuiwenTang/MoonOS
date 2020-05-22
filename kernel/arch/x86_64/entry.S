@@ -37,7 +37,7 @@
  *   - switch to 64 bit long mode
  *   - call into C code since we don't want to write everything in Assembly.
  **/
- start32:
+start32:
     jmp 1f
 
 .align 16
@@ -185,7 +185,10 @@ setup_mapping:
     add $0x40000000, %eax
     adc $0, %ebx
 
-    movl %eax, 4080(%edi)
+    movl %eax, 8(%edi)
+    movl %ebx, 12(%edi)
+
+    movl %eax, 4088(%edi)
     movl %ebx, 4092(%edi)
 
     add $0x40000000, %eax
