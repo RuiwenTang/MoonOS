@@ -9,19 +9,24 @@ executable("kernel") {
         link_file,
         "-lgcc",
         "-ffreestanding",
-        "-nostdlib"
+        "-nostdlib",
+        "-z",
+        "max-page-size=0x1000"
     ]
 
     cflags = [
-        "-nostdlib",
-        "-nostdinc",
-        "-fno-builtin",
-        "-fno-stack-protector",
-        "-nostartfiles",
-        "-nodefaultlibs",
+        "-mno-red-zone",
+        "-mno-mmx",
+        "-mno-sse",
+        "-mno-sse2",
+        "-ffreestanding",
+        "-mcmodel=kernel",
+        "-fno-pic",
         "-Wall",
         "-Wextra",
-        "-finline-functions"
+        "-Wframe-larger-than=1024",
+        "-Wstack-usage=1024",
+        "-Wno-unknown-warning-option"
     ]
 
 
@@ -45,6 +50,7 @@ executable("kernel") {
         "libc/stdlib/atoi.c",
         # kernel
         "kmain.c",
+        "arch/x86_64/entry.S",
         "arch/x86_64/tty.c"
     ]
 

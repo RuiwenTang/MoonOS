@@ -151,7 +151,7 @@ toolchain("moonos-gccx86_64") {
     tool("link") {
         outfile = "{{target_output_name}}{{output_extension}}"
         rspfile = "$outfile.rsp"
-        command = "x86_64-moonos-elf-ld {{ldflags}} -o $outfile  @$rspfile {{solibs}}  {{libs}}"
+        command = "x86_64-moonos-elf-g++ {{ldflags}} -o $outfile  @$rspfile {{solibs}}  {{libs}}"
         description = "LINK $outfile"
         default_output_dir = "{{root_out_dir}}"
         rspfile_content = "{{inputs}}"

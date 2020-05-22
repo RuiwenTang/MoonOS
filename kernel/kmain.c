@@ -1,4 +1,7 @@
 #include <moonos/arch/tty.h>
 #include <multiboot/multiboot.h>
 
-void kernel_main() {}
+void main() {
+    terminal_initialize();
+    terminal_putchar('c');
+}

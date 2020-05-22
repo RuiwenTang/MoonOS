@@ -2,6 +2,7 @@
 #define __MOON_OS_STRING_H__
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
