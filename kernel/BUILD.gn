@@ -63,6 +63,7 @@ executable("kernel") {
         "arch/x86_64/ints.S",
         "arch/x86_64/time.c",
         "memory/balloc.c",
+        "memory/paging.c",
     ]
 
     include_dirs = [

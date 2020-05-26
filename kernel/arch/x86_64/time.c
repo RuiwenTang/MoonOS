@@ -13,7 +13,6 @@ static void timer_handler(void) { kprintf("."); }
 
 static void local_apic_timer_setup(void) {
     const int intno = allocate_interrupt();
-    kprintf("timer intno = %d\n", intno);
     register_interrupt_handler(intno, &timer_handler);
 
     local_apic_write(LOCAL_APIC_TIMER_DIVIDER, TIMER_DIV128);
