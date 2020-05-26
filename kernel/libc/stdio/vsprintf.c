@@ -1,9 +1,9 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-/* we use this so that we can do without the ctype library */
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
 static int skip_atoi(const char** s) {

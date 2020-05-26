@@ -11,3 +11,39 @@ int atoi(const char* str) {
     }
     return value;
 }
+
+char* kulltoa(unsigned long long value, char* str, int base) {
+    static const char* digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+    char* ptr = str;
+    char* start = str;
+
+    do {
+        const int r = value % base;
+
+        value = value / base;
+        *ptr++ = digits[r];
+    } while (value);
+
+    *ptr-- = '\0';
+
+    while (start < ptr) {
+        const char c = *ptr;
+
+        *ptr-- = *start;
+        *start++ = c;
+    }
+
+    return str;
+}
+
+char* klltoa(long long value, char* str, int base) {
+    char* ptr = str;
+    if (value < 0) {
+        *ptr++ = '-';
+        value = -value;
+    }
+
+    kulltoa(value, ptr, base);
+
+    return str;
+}

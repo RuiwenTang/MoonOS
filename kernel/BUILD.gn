@@ -30,6 +30,8 @@ executable("kernel") {
         "-Wno-unknown-warning-option",
         "-nostdlib",
         "-fno-builtin",
+        "-m64",
+        "-pedantic",
     ]
 
 
@@ -53,8 +55,13 @@ executable("kernel") {
         "libc/stdlib/atoi.c",
         # kernel
         "kmain.c",
+        "kprintf.c",
         "arch/x86_64/entry.S",
-        "arch/x86_64/tty.c"
+        "arch/x86_64/tty.c",
+        "arch/x86_64/interrupt.c",
+        "arch/x86_64/apic.c",
+        "arch/x86_64/ints.S",
+        "arch/x86_64/time.c",
     ]
 
     include_dirs = [

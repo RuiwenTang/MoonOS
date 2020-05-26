@@ -7,6 +7,10 @@ extern "C" {
 
 int katoi(const char* str);
 
+char* kulltoa(unsigned long long value, char* str, int base);
+
+char* klltoa(long long value, char* str, int base);
+
 #ifdef __cplusplus
 }
 #endif

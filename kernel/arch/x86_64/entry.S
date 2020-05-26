@@ -280,7 +280,8 @@ start64:
      * which is much better than assembly.
      **/
     cld
-    call main
+	movabsq $main, %rax
+	call *%rax
 
     cli
 1:
