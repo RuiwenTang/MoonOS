@@ -65,6 +65,7 @@ executable("kernel") {
         "memory/balloc.c",
         "memory/paging.c",
         "memory/buddy.c",
+        "memory/slab.c",
         "util/list.c",
     ]
 

@@ -16,6 +16,8 @@ void list_init(list_head_t* list);
 void list_add_tail(list_head_t* node, list_head_t* list);
 void list_add(list_head_t* node, list_head_t* list);
 void list_del(list_head_t* node);
+void list_splice(list_head_t* from, list_head_t* to);
+void list_splice_tail(list_head_t* from, list_head_t* to);
 int list_empty(const list_head_t* list);
 
 #ifdef __cplusplus
