@@ -9,7 +9,7 @@ static const uint32_t TIMER_PREIODIC = (1 << 17);
 static const uint32_t TIMER_DIV128 = 10;
 static const uint32_t TIMER_INIT = 262144;
 
-static void timer_handler(void) { kprintf("Tick\n"); }
+static void timer_handler(void) { kprintf("."); }
 
 static void local_apic_timer_setup(void) {
     const int intno = allocate_interrupt();
