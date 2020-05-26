@@ -64,6 +64,8 @@ executable("kernel") {
         "arch/x86_64/time.c",
         "memory/balloc.c",
         "memory/paging.c",
+        "memory/buddy.c",
+        "util/list.c",
     ]
 
     include_dirs = [

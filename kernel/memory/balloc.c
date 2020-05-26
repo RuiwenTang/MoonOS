@@ -208,7 +208,7 @@ void balloc_setup(const struct multiboot_info* info) {
 
 size_t balloc_ranges(void) { return all.size; }
 
-void balloc_get_ranges(size_t i, struct balloc_range* range) {
+void balloc_get_range(size_t i, struct balloc_range* range) {
     *range = all.range[i];
 }
 
