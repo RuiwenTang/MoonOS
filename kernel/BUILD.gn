@@ -66,6 +66,8 @@ executable("kernel") {
         "memory/paging.c",
         "memory/buddy.c",
         "memory/slab.c",
+        "thread/thread.c",
+        "thread/switch.S",
         "util/list.c",
     ]
 

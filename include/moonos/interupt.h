@@ -7,6 +7,8 @@
 #define INTNO_DIVBYZERO 0
 #define INTNO_SPURIOUS 255
 
+#define RFLAGS_IF (1ull << 9)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,6 +39,7 @@ struct frame {
 } __attribute__((packed));
 
 typedef void (*exception_handler_t)(void);
+
 typedef void (*interrupt_handler_t)(void);
 
 /**
@@ -48,6 +51,26 @@ static inline void local_int_disable(void) {
 
 static inline void local_int_enable(void) {
     __asm__ volatile("sti" : : : "cc");
+}
+
+static inline int local_int_state(void) {
+    uint64_t rflags;
+
+    __asm__("pushf; popq %0" : "=r"(rflags) : : "memory");
+    return rflags & RFLAGS_IF;
+}
+
+static inline int local_int_save(void) {
+    const int enabled = local_int_state();
+
+    local_int_disable();
+    return enabled;
+}
+
+static inline void local_int_restore(int enabled) {
+    if (enabled) {
+        local_int_enable();
+    }
 }
 
 /**
@@ -86,6 +109,7 @@ void register_exception_handler(int exception, exception_handler_t handler);
  * and mapping might be very closely connected/dependent).
  **/
 int allocate_interrupt(void);
+
 void register_interrupt_handler(int intno, interrupt_handler_t handler);
 
 void ints_setup(void);

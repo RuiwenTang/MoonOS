@@ -3,13 +3,14 @@
 #include <moonos/apic.h>
 #include <moonos/interupt.h>
 #include <moonos/kprintf.h>
+#include <moonos/thread/thread.h>
 #include <stdint.h>
 
 static const uint32_t TIMER_PREIODIC = (1 << 17);
 static const uint32_t TIMER_DIV128 = 10;
 static const uint32_t TIMER_INIT = 262144;
 
-static void timer_handler(void) { kprintf("."); }
+static void timer_handler(void) { scheduler_tick(); }
 
 static void local_apic_timer_setup(void) {
     const int intno = allocate_interrupt();

@@ -12,7 +12,6 @@ int ksprintf(char* str, const char* format, ...);
 int kvsnprintf(char* str, size_t size, const char* format, va_list ap);
 int kvsprintf(char* str, const char* format, va_list ap);
 
-void kprintf(const char* format, ...);
 
 #ifdef __cplusplus
 }

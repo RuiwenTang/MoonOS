@@ -27,7 +27,7 @@ void buddy_setup(void);
  *  - other resutrns physical address
  **/
 page_t* __buddy_alloc(int order);
-uintptr_t boddy_alloc(int order);
+uintptr_t buddy_alloc(int order);
 void __buddy_free(page_t* page, int order);
 void buddy_free(uintptr_t phys, int order);
 

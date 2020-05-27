@@ -5,6 +5,7 @@
 #include <moonos/memory/balloc.h>
 #include <moonos/memory/buddy.h>
 #include <moonos/memory/paging.h>
+#include <moonos/thread/thread.h>
 #include <moonos/time.h>
 #include <multiboot/multiboot.h>
 #include <string.h>
@@ -75,6 +76,63 @@ static void buddy_test(void) {
     }
 }
 
+static int threadx(void* arg) {
+    const int id = (intptr_t)arg;
+    int count = 5;
+    while (1) {
+        /**
+         * You might be surprised what effects may cause
+         * unsychronized calls to printf from different threads.
+         * But synchronization is a subject of different week,
+         * so far we just block interrupts while we printing
+         * something.
+         **/
+        const int enabled = local_int_save();
+
+        kprintf("%d", id);
+        local_int_restore(enabled);
+        count--;
+    }
+    return 0;
+}
+
+static int thread0(void* unused) {
+    (void)unused;
+    for (uint64_t i = 0; i != 100000000; i++)
+        ;
+    kprintf("Thread0: return 42\n");
+    return 42;
+}
+
+static int init(void* unused) {
+    (void)unused;
+
+    thread_t* thread = thread_create(&thread0, 0);
+    int ret;
+    thread_start(thread);
+    thread_join(thread, &ret);
+    thread_destroy(thread);
+    kprintf("Thread0 returned %d\n", ret);
+
+    for (uint64_t i = 0; i != 100000000; ++i)
+        ;
+
+    thread_t* thread1 = thread_create(&threadx, (void*)1);
+    thread_t* thread2 = thread_create(&threadx, (void*)2);
+
+    thread_start(thread1);
+    thread_start(thread2);
+
+    while (1) {
+        const int enabled = local_int_save();
+
+        // kprintf("I'm thread 0\n");
+        kprintf("0");
+        local_int_restore(enabled);
+    }
+    return 0;
+}
+
 void main(uintptr_t mb_info_phys) {
     terminal_initialize();
 
@@ -86,11 +144,23 @@ void main(uintptr_t mb_info_phys) {
     paging_setup();
     buddy_setup();
     time_setup();
-    local_int_enable();
-
+    scheduler_setup();
     // test_mapping();
-    buddy_test();
+    // buddy_test();
 
+    thread_t* thread = thread_create(&init, 0);
+    if (!thread) {
+        kprintf("failed to create init thread\n");
+        while (1)
+            ;
+    }
+    thread_start(thread);
+    /**
+     * @brief this function will open interrupt
+     *
+     */
+    scheduler_idle();
+    kprintf("end kmain\n");
     // while (1)
     //     ;
 }
