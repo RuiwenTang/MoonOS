@@ -69,6 +69,9 @@ executable("kernel") {
         "thread/thread.c",
         "thread/switch.S",
         "util/list.c",
+        "cpu/acpi.c",
+        "cpu/cpuid.S",
+        "cpu/cpu_detect.c",
     ]
 
     include_dirs = [

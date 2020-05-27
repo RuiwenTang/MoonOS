@@ -104,3 +104,5 @@ void local_apic_setup(void) {
     local_apic_write(LOCAL_APIC_DFR, DFR);
     local_apic_write(LOCAL_APIC_SPURIOUS, SPURIOUS);
 }
+
+uint32_t local_apic_get_id() { return local_apic_read(LOCAL_APIC_ID) >> 24; }

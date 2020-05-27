@@ -1,4 +1,6 @@
 #include <moonos/arch/tty.h>
+#include <moonos/cpu/acpi.h>
+#include <moonos/cpu/cpuid.h>
 #include <moonos/interupt.h>
 #include <moonos/kprintf.h>
 #include <moonos/memory.h>
@@ -79,7 +81,7 @@ static void buddy_test(void) {
 static int threadx(void* arg) {
     const int id = (intptr_t)arg;
     int count = 5;
-    while (1) {
+    while (count) {
         /**
          * You might be surprised what effects may cause
          * unsychronized calls to printf from different threads.
@@ -127,10 +129,18 @@ static int init(void* unused) {
         const int enabled = local_int_save();
 
         // kprintf("I'm thread 0\n");
-        kprintf("0");
+        // kprintf("0");
         local_int_restore(enabled);
     }
     return 0;
+}
+
+void detect_cpu() {
+    int ret = support_cpuid();
+    kprintf("Support cpuid = %x\n", ret);
+    if (ret != 0) {
+        cpu_detect();
+    }
 }
 
 void main(uintptr_t mb_info_phys) {
@@ -139,6 +149,7 @@ void main(uintptr_t mb_info_phys) {
     const struct multiboot_info* info =
             (const struct multiboot_info*)va(mb_info_phys);
 
+    acpi_init();
     ints_setup();
     balloc_setup(info);
     paging_setup();
