@@ -7,6 +7,7 @@
 #include <moonos/memory/balloc.h>
 #include <moonos/memory/buddy.h>
 #include <moonos/memory/paging.h>
+#include <moonos/pci/pci.h>
 #include <moonos/thread/thread.h>
 #include <multiboot/multiboot.h>
 #include <string.h>
@@ -155,6 +156,7 @@ void main(uintptr_t mb_info_phys) {
     buddy_setup();
     acpi_init();
     ints_setup();
+    pci_init();
 
     scheduler_setup();
     // test_mapping();
