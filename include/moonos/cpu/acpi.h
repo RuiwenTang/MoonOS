@@ -159,6 +159,32 @@ enum apic_header_type {
     APIC_TYPE_INTERRUPT_OVERRIDE,
 };
 
+struct APICLOCALAPIC {
+    apic_header_t header;
+    uint8_t acpi_processor_id;
+    uint8_t apic_id;
+    uint32_t flags;
+} __attribute__((packed));
+typedef struct APICLOCALAPIC apic_local_apic_t;
+
+struct APICIOAPIC {
+    apic_header_t header;
+    uint8_t io_apic_id;
+    uint8_t reserved;
+    uint32_t io_apic_addr;
+    uint32_t global_system_interrupt_base;
+} __attribute__((packed));
+typedef struct APICIOAPIC apic_io_apic_t;
+
+struct APICINTOVERRIDEAPIC {
+    apic_header_t header;
+    uint8_t bus_source;
+    uint8_t irq_source;
+    uint32_t global_system_interrupt;
+    uint16_t flags;
+} __attribute__((packed));
+typedef struct APICINTOVERRIDEAPIC apic_int_override_apic_t;
+
 struct RSDP* scan_for_rsdp(char* start, uint32_t length);
 
 uint8_t acpi_checksum(uint8_t* table, uint32_t length);

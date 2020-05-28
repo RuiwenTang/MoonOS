@@ -27,11 +27,11 @@ uint8_t acpi_checksum(uint8_t* table, uint32_t length) {
 }
 
 void get_acpi_table() {
-    uintptr_t rsdp = va(RSDP_BASE_1);
+    uintptr_t rsdp = (uintptr_t)va(RSDP_BASE_1);
 
     kprintf("try find rsdp at 0x%llx\n", (uint64_t)rsdp);
 
-    struct RSDP* ptr = scan_for_rsdp(rsdp, RSDP_END_1 - RSDP_BASE_1);
+    struct RSDP* ptr = scan_for_rsdp((char*)rsdp, RSDP_END_1 - RSDP_BASE_1);
     if (ptr == 0) {
         kprintf("Not found rsdp location\n");
     } else {
@@ -52,6 +52,7 @@ void get_acpi_table() {
         if (checksum == 0) {
             kprintf("This is ACPI v2 \n");
             ptr_v2 = (struct RSDPV2*)ptr;
+            (void)ptr_v2;
         } else {
             kprintf("This is ACPI v1\n");
         }
@@ -61,7 +62,7 @@ void get_acpi_table() {
 static int acpi_parse_rsdp(struct RSDP* rsdp) {
     kprintf("RSDP found\n");
 
-    uint8_t checksum = acpi_checksum(rsdp, sizeof(struct RSDP));
+    uint8_t checksum = acpi_checksum((uint8_t*)rsdp, sizeof(struct RSDP));
     if (checksum) {
         kprintf("Checksum failed\n");
         while (1)
@@ -86,8 +87,8 @@ static int acpi_parse_rsdp(struct RSDP* rsdp) {
 }
 
 void acpi_init(void) {
-    uintptr_t rsdp = va(RSDP_BASE_1);
-    struct RSDP* ptr = scan_for_rsdp(rsdp, RSDP_END_1 - RSDP_BASE_1);
+    uintptr_t rsdp = (uintptr_t)va(RSDP_BASE_1);
+    struct RSDP* ptr = scan_for_rsdp((char*)rsdp, RSDP_END_1 - RSDP_BASE_1);
     if (ptr == 0) {
         kprintf("Not found rsdp location\n");
         while (1)
@@ -130,12 +131,12 @@ void apic_parse_facp(fadt_t* fadt) {
 
     if (fadt->SMI_CommandPort) {
         // TODO wait for sci_en bit
-        kprintf("facp smi_command port = %x\n",
-                (uint32_t)fadt->SMI_CommandPort);
-        kprintf("facp acpienable = %x\n", (uint32_t)fadt->AcpiEnable);
+        // kprintf("facp smi_command port = %x\n",
+        //         (uint32_t)fadt->SMI_CommandPort);
+        // kprintf("facp acpienable = %x\n", (uint32_t)fadt->AcpiEnable);
         out8((uint16_t)fadt->SMI_CommandPort, fadt->AcpiEnable);
         kprintf("ACPI wait enable\n");
-        while (in16((uint16_t)fadt->PM1aControlBlock) & 1 == 0)
+        while ((in16((uint16_t)fadt->PM1aControlBlock) & 1) == 0)
             ;
 
         kprintf("APIC enabled\n");
@@ -153,7 +154,34 @@ void apic_parse_mdat(madt_t* mdat) {
     while (ptr < end) {
         apic_header_t* header = (apic_header_t*)ptr;
         if (header->entry_type == APIC_TYPE_LOCAL_APIC) {
-            kprintf("Local APIC HEADER\n");
+            kprintf("Local APIC HEADER -->");
+            apic_local_apic_t* local_apic = (apic_local_apic_t*)ptr;
+            kprintf("Found cpu: %d %d %x \n",
+                    local_apic->acpi_processor_id,
+                    local_apic->apic_id,
+                    local_apic->flags);
+
+            if (g_acpi_cpu_count < MAX_CPU_COUNT) {
+                g_acpi_cpu_ids[g_acpi_cpu_count] = local_apic->apic_id;
+                g_acpi_cpu_count++;
+            }
+        } else if (header->entry_type == APIC_TYPE_IO_APIC) {
+            kprintf("IO APIC HEADER -->");
+            apic_io_apic_t* io_apic = (apic_io_apic_t*)ptr;
+            kprintf(" IO : %d 0x%08x %d \n",
+                    io_apic->io_apic_id,
+                    io_apic->io_apic_addr,
+                    io_apic->global_system_interrupt_base);
+        } else if (header->entry_type == APIC_TYPE_INTERRUPT_OVERRIDE) {
+            kprintf("INT OVERRIDE APIC HEADER -->");
+            apic_int_override_apic_t* int_override_apic =
+                    (apic_int_override_apic_t*)ptr;
+
+            kprintf("override: %d %d %d 0x%04x\n",
+                    int_override_apic->bus_source,
+                    int_override_apic->irq_source,
+                    int_override_apic->global_system_interrupt,
+                    int_override_apic->flags);
         }
 
         ptr += header->record_length;

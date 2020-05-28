@@ -31,7 +31,6 @@ executable("kernel") {
         "-nostdlib",
         "-fno-builtin",
         "-m64",
-        "-pedantic",
     ]
 
 

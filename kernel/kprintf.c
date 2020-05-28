@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct print_ctx {
     int (*out)(struct print_ctx* ctx, const char* buf, int size);
@@ -100,9 +101,11 @@ static int decode_format(const char** fmt_ptr) {
             case 'x':
             case 'X':
             case 'o':
-                spec |= c == 'o' ? FMT_OCT : FMT_HEX;
+                spec |= (c == 'o' ? FMT_OCT : FMT_HEX);
+                __attribute__((fallthrough));
             case 'u':
                 spec |= FMT_UNSIGNED;
+                __attribute__((fallthrough));
             case 'd':
             case 'i':
                 type = FMT_INT;

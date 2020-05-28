@@ -280,7 +280,7 @@ void buddy_free(uintptr_t phys, int order) {
 }
 
 uintptr_t page_addr(const struct page* page) {
-    struct zone* zone = page_zone(page);
+    struct zone* zone = page_zone((struct page*)page);
     const uintptr_t idx = zone->begin + (page - zone->page);
 
     return idx * PAGE_SIZE;

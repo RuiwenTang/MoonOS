@@ -67,6 +67,7 @@ static void handle_exception(struct frame* frame, int exception) {
 
     const uintptr_t stack_bottom = rsp & ~((uintptr_t)PAGE_SIZE - 1);
     const uintptr_t stack_top = stack_bottom + PAGE_SIZE;
+    (void)stack_top;
 
     kprintf("RIP 0x%llx, RSP 0x%llx, RBP 0x%llx,\n"
             "R8 0x%llx, R9 0x%llx, R10 0x%llx, R11 0x%llx,\n"

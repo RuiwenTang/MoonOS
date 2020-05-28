@@ -12,6 +12,7 @@
 #include <multiboot/multiboot.h>
 #include <string.h>
 
+#if 0
 static void test_mapping(void) {
     const size_t count = balloc_free_ranges();
     for (size_t i = 0; i != count; i++) {
@@ -77,6 +78,7 @@ static void buddy_test(void) {
                 (uint64_t)(PAGE_SIZE << i));
     }
 }
+#endif
 
 static int threadx(void* arg) {
     const int id = (intptr_t)arg;

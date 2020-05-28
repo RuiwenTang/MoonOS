@@ -89,6 +89,7 @@ int kvsprintf(char* buf, const char* fmt, va_list args) {
     int precision;   /* min. # of digits for integers; max
                 number of chars for from string */
     int qualifier;   /* 'h', 'l', or 'L' for integer fields */
+    (void)qualifier;
 
     for (str = buf; *fmt; ++fmt) {
         if (*fmt != '%') {
@@ -189,14 +190,17 @@ int kvsprintf(char* buf, const char* fmt, va_list args) {
 
             case 'x':
                 flags |= SMALL;
+                __attribute__((fallthrough));
             case 'X':
                 str = number(str, va_arg(args, unsigned long), 16, field_width,
                              precision, flags);
                 break;
 
             case 'd':
+                __attribute__((fallthrough));
             case 'i':
                 flags |= SIGN;
+                __attribute__((fallthrough));
             case 'u':
                 str = number(str, va_arg(args, unsigned long), 10, field_width,
                              precision, flags);
