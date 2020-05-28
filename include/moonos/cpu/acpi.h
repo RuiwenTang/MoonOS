@@ -196,6 +196,9 @@ void apic_parse_rsdt(acpi_sdt_header_t* header);
 void apic_parse_sdt(acpi_sdt_header_t* header);
 void apic_parse_facp(fadt_t* fadt);
 void apic_parse_mdat(madt_t* mdat);
+
+uint32_t apic_remap_irq(uint8_t irq);
+
 #ifdef __cplusplus
 }
 #endif

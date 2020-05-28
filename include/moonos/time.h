@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-void time_setup(void);
+int time_setup(void);
+void timer_handler(void);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-#include <moonos/apic.h>
+#include <moonos/apic/local_apic.h>
 #include <moonos/interupt.h>
 #include <moonos/ioport.h>
 #include <moonos/kprintf.h>
@@ -20,6 +20,25 @@ static uintptr_t local_apic_base(void) {
     return (((uintptr_t)high << 32) | low) & ~((uintptr_t)(1 << 12) - 1);
 }
 
+// ------------------------------------------------------------------------------------------------
+#define PIC1_CMD 0x0020
+#define PIC1_DATA 0x0021
+#define PIC2_CMD 0x00a0
+#define PIC2_DATA 0x00a1
+
+#define ICW1_ICW4 0x01    // ICW4 command word: 0 = not needed, 1 = needed
+#define ICW1_SINGLE 0x02  // Single mode: 0 = cascade, 1 = single
+#define ICW1_ADI \
+    0x04  // Call address interval: 0 = interval of 8, 1 = interval of 4
+#define ICW1_LTIM 0x08  // Interrupt trigger mode: 0 = edge, 1 = level
+#define ICW1_INIT 0x10  // Initialization
+
+#define ICW4_8086 0x01        // Microprocessor mode: 0=MCS-80/85, 1=8086/8088
+#define ICW4_AUTO 0x02        // Auto EOI: 0 = disabled, 1 = enabled
+#define ICW4_BUF_SLAVE 0x04   // Buffered mode/slave
+#define ICW4_BUF_MASTER 0x0C  // Buffered mode/master
+#define ICW4_SFNM 0x10        // Special fully nested is programmed
+
 /**
  * Even though we are going to use only local APIC for simplicity, we need to
  * disable legacy PIC to avoid problems. So the function setups PIC and than
@@ -27,26 +46,20 @@ static uintptr_t local_apic_base(void) {
  * provide the code without any explanation it's might look a bit magical.
  **/
 static void i8259_disable(void) {
-    const int MCMD = 0x20;
-    const int MDATA = 0x21;
+    out8(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
+    out8(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
 
-    const int SCMD = 0xa0;
-    const int SDATA = 0xa1;
+    out8(PIC1_DATA, IRQ_BASE);
+    out8(PIC2_DATA, IRQ_BASE + 8);
 
-    out8(MCMD, (1 << 0) | (1 << 4));
-    out8(SCMD, (1 << 0) | (1 << 4));
+    out8(PIC1_DATA, 4);
+    out8(PIC2_DATA, 2);
 
-    out8(MDATA, 0x20);
-    out8(SDATA, 0x28);
+    out8(PIC1_DATA, ICW4_8086);
+    out8(PIC2_DATA, ICW4_8086);
 
-    out8(MDATA, (1 << 2));
-    out8(SDATA, 2);
-
-    out8(MDATA, 1);
-    out8(SDATA, 1);
-
-    out8(MDATA, 0xff);
-    out8(SDATA, 0xff);
+    out8(PIC1_DATA, 0xff);
+    out8(PIC2_DATA, 0xff);
 }
 
 uint32_t local_apic_read(int offs) {

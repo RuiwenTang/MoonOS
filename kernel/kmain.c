@@ -8,7 +8,6 @@
 #include <moonos/memory/buddy.h>
 #include <moonos/memory/paging.h>
 #include <moonos/thread/thread.h>
-#include <moonos/time.h>
 #include <multiboot/multiboot.h>
 #include <string.h>
 
@@ -151,12 +150,12 @@ void main(uintptr_t mb_info_phys) {
     const struct multiboot_info* info =
             (const struct multiboot_info*)va(mb_info_phys);
 
-    acpi_init();
-    ints_setup();
     balloc_setup(info);
     paging_setup();
     buddy_setup();
-    time_setup();
+    acpi_init();
+    ints_setup();
+
     scheduler_setup();
     // test_mapping();
     // buddy_test();

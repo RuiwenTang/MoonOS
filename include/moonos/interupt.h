@@ -7,6 +7,9 @@
 #define INTNO_DIVBYZERO 0
 #define INTNO_SPURIOUS 255
 
+#define IRQ_BASE 0x20
+#define INT_TIMER 0x20
+
 #define RFLAGS_IF (1ull << 9)
 
 #ifdef __cplusplus

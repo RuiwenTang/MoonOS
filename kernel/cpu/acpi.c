@@ -1,11 +1,15 @@
+#include <moonos/apic/io_apic.h>
 #include <moonos/cpu/acpi.h>
 #include <moonos/ioport.h>
 #include <moonos/kprintf.h>
 #include <moonos/memory.h>
+#include <stddef.h>
 #include <string.h>
 
 uint32_t g_acpi_cpu_count;
 uint8_t g_acpi_cpu_ids[MAX_CPU_COUNT];
+
+static madt_t* s_madt = NULL;
 
 struct RSDP* scan_for_rsdp(char* start, uint32_t length) {
     char* end = start + length;
@@ -147,7 +151,7 @@ void apic_parse_facp(fadt_t* fadt) {
 
 void apic_parse_mdat(madt_t* mdat) {
     kprintf("Local APIC Address = 0x%x\n", mdat->local_apic_addr);
-
+    s_madt = mdat;
     uint8_t* ptr = (uint8_t*)(mdat + 1);
     uint8_t* end = ((uint8_t*)mdat) + mdat->header.length;
 
@@ -168,22 +172,43 @@ void apic_parse_mdat(madt_t* mdat) {
         } else if (header->entry_type == APIC_TYPE_IO_APIC) {
             kprintf("IO APIC HEADER -->");
             apic_io_apic_t* io_apic = (apic_io_apic_t*)ptr;
-            kprintf(" IO : %d 0x%08x %d \n",
+            kprintf(" IO : %d 0x%08x | %d \n",
                     io_apic->io_apic_id,
                     io_apic->io_apic_addr,
                     io_apic->global_system_interrupt_base);
+            io_apic_set_base(io_apic->io_apic_addr);
         } else if (header->entry_type == APIC_TYPE_INTERRUPT_OVERRIDE) {
-            kprintf("INT OVERRIDE APIC HEADER -->");
-            apic_int_override_apic_t* int_override_apic =
-                    (apic_int_override_apic_t*)ptr;
+            // kprintf("INT OVERRIDE APIC HEADER -->");
+            // apic_int_override_apic_t* int_override_apic =
+            //         (apic_int_override_apic_t*)ptr;
 
-            kprintf("override: %d %d %d 0x%04x\n",
-                    int_override_apic->bus_source,
-                    int_override_apic->irq_source,
-                    int_override_apic->global_system_interrupt,
-                    int_override_apic->flags);
+            // kprintf("override: %d %d %d 0x%04x\n",
+            //         int_override_apic->bus_source,
+            //         int_override_apic->irq_source,
+            //         int_override_apic->global_system_interrupt,
+            //         int_override_apic->flags);
         }
 
         ptr += header->record_length;
     }
+}
+
+uint32_t apic_remap_irq(uint8_t irq) {
+    madt_t* mdat = s_madt;
+
+    uint8_t* ptr = (uint8_t*)(mdat + 1);
+    uint8_t* end = (uint8_t*)mdat + mdat->header.length;
+
+    while (ptr < end) {
+        apic_header_t* header = (apic_header_t*)ptr;
+        if (header->entry_type == APIC_TYPE_INTERRUPT_OVERRIDE) {
+            apic_int_override_apic_t* int_override =
+                    (apic_int_override_apic_t*)ptr;
+            if (int_override->irq_source == irq) {
+                return int_override->global_system_interrupt;
+            }
+        }
+        ptr += header->record_length;
+    }
+    return irq;
 }

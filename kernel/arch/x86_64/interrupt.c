@@ -1,7 +1,10 @@
-#include <moonos/apic.h>
+#include <moonos/apic/io_apic.h>
+#include <moonos/apic/local_apic.h>
+#include <moonos/cpu/acpi.h>
 #include <moonos/interupt.h>
 #include <moonos/kprintf.h>
 #include <moonos/memory.h>
+#include <moonos/time.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -159,6 +162,11 @@ static void idt_setup(void) {
 void ints_setup(void) {
     idt_setup();
     local_apic_setup();
+    io_apic_init();
+    int no = time_setup();
+    if (no >= 0) {
+        io_apic_set_entry(apic_remap_irq(no), INT_TIMER);
+    }
 }
 
 int allocate_interrupt(void) {
