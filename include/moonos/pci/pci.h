@@ -59,6 +59,37 @@ extern "C" {
 #define PCI_BAR_64 0x04
 #define PCI_BAR_PREFETCH 0x08
 
+/**
+ *  Base Address Registers
+ */
+struct PCIBAR {
+    union {
+        uintptr_t address;
+        uint16_t port;
+    } u;
+    uint64_t size;
+    uint32_t flags;
+};
+typedef struct PCIBAR pci_bar_t;
+
+/**
+ * @brief
+ *
+ */
+struct PCI_DEVICE_INFO {
+    uint16_t vendor_id;
+    uint16_t device_id;
+    uint8_t class_code;
+    uint8_t sub_class;
+    uint8_t progIntf;
+};
+typedef struct PCI_DEVICE_INFO pci_device_info_t;
+
+struct PCI_DRIVER {
+    void (*init)(uint32_t id, pci_device_info_t* info);
+};
+typedef struct PCI_DRIVER pci_driver_t;
+
 uint8_t pci_read8(uint32_t id, uint32_t reg);
 uint16_t pci_read16(uint32_t id, uint32_t reg);
 uint32_t pci_read32(uint32_t id, uint32_t reg);
@@ -68,6 +99,7 @@ void pci_write16(uint32_t id, uint32_t reg, uint16_t data);
 void pci_write32(uint32_t id, uint32_t reg, uint32_t data);
 
 void pci_init(void);
+void pci_get_bar(pci_bar_t* bar, uint32_t id, uint32_t index);
 
 #ifdef __cplusplus
 }

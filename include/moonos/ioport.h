@@ -27,12 +27,12 @@ static inline unsigned short in16(unsigned short port) {
     return value;
 }
 
-static inline void out32(unsigned short port, unsigned long data) {
+static inline void out32(unsigned short port, unsigned int data) {
     __asm__ volatile("outl %0, %1" : : "a"(data), "d"(port));
 }
 
-static inline unsigned long in32(unsigned short port) {
-    unsigned long value;
+static inline unsigned int in32(unsigned short port) {
+    unsigned int value;
 
     __asm__ volatile("inl %1, %0" : "=a"(value) : "d"(port));
     return value;
