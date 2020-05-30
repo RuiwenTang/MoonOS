@@ -198,12 +198,14 @@ void balloc_setup(const struct multiboot_info* info) {
     balloc_add_range(&all, 0, 4096);
     balloc_remove_range(&free, 0, 4096);
 
-    /* Print free physical ranges as a "proof" we did everything well. */
+/* Print free physical ranges as a "proof" we did everything well. */
+#if 0
     kprintf("Free memory ranges:\n");
     for (size_t i = 0; i != free.size; i++) {
         kprintf("range: 0x%llx - 0x%llx\n", (uint64_t)free.range[i].begin,
                 (uint64_t)free.range[i].end);
     }
+#endif
 }
 
 size_t balloc_ranges(void) { return all.size; }

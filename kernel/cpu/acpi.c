@@ -139,11 +139,11 @@ void apic_parse_facp(fadt_t* fadt) {
         //         (uint32_t)fadt->SMI_CommandPort);
         // kprintf("facp acpienable = %x\n", (uint32_t)fadt->AcpiEnable);
         out8((uint16_t)fadt->SMI_CommandPort, fadt->AcpiEnable);
-        kprintf("ACPI wait enable\n");
+        // kprintf("ACPI wait enable\n");
         while ((in16((uint16_t)fadt->PM1aControlBlock) & 1) == 0)
             ;
 
-        kprintf("APIC enabled\n");
+        // kprintf("APIC enabled\n");
     } else {
         kprintf("ACPI already enabled\n");
     }
