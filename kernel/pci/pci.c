@@ -3,112 +3,122 @@
 #include <moonos/pci/pci.h>
 #include <stdint.h>
 
-static void pci_visit(uint32_t bus, uint32_t dev, uint32_t func) {
-    uint32_t id = PCI_MAKE_ID(bus, dev, func);
+/*
+ * There can be up to 256 PCI busses, but it takes a noticeable
+ * amount of time to scan that whole space. Limit the number of
+ * supported busses to something more reasonable...
+ */
+#define PCI_MAX_BUSSES 0x20
 
-    pci_device_info_t info;
-    info.vendor_id = pci_read16(id, PCI_CONFIG_VENDOR_ID);
-    if (info.vendor_id == 0xffff) {
-        return;
-    }
-    info.device_id = pci_read16(id, PCI_CONFIG_DEVICE_ID);
-    info.progIntf = pci_read8(id, PCI_CONFIG_PROG_INTF);
-    info.sub_class = pci_read8(id, PCI_CONFIG_SUBCLASS);
-    info.class_code = pci_read8(id, PCI_CONFIG_CLASS_CODE);
-    kprintf("pci vendor id = %x | device id = %x |progIF = %x \n",
-            info.vendor_id, info.device_id, info.progIntf);
+#define PCI_REG_CONFIG_ADDRESS 0xCF8
+#define PCI_REG_CONFIG_DATA 0xCFC
+
+static uint32_t pci_config_pack_address(const pci_address_t* addr,
+                                        uint16_t offset) {
+    const uint32_t enable_bit = 0x80000000UL;
+
+    return (((uint32_t)addr->bus << 16) | ((uint32_t)addr->device << 11) |
+            ((uint32_t)addr->function << 8) | offset | enable_bit);
 }
 
-void pci_init(void) {
-    kprintf("Pci init:\n");
-    for (uint32_t bus = 0; bus < 256; bus++) {
-        for (uint32_t dev = 0; dev < 32; dev++) {
-            uint32_t base_id = PCI_MAKE_ID(bus, dev, 0);
-            uint8_t header_type = pci_read8(base_id, PCI_CONFIG_HEADER_TYPE);
-            uint32_t func_count = header_type & PCI_TYPE_MULTIFUNC ? 8 : 1;
+uint32_t pci_config_read32(const pci_address_t* addr, uint16_t offset) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    return in32(PCI_REG_CONFIG_DATA);
+}
 
-            for (uint32_t func = 0; func < func_count; func++) {
-                pci_visit(bus, dev, func);
+uint16_t pci_config_read16(const pci_address_t* addr, uint16_t offset) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    return in16(PCI_REG_CONFIG_DATA);
+}
+
+uint8_t pci_config_read8(const pci_address_t* addr, uint16_t offset) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    return in8(PCI_REG_CONFIG_DATA);
+}
+
+void pci_config_write32(const pci_address_t* addr,
+                        uint16_t offset,
+                        uint32_t data) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    out32(PCI_REG_CONFIG_DATA, data);
+}
+
+void pci_config_write16(const pci_address_t* addr,
+                        uint16_t offset,
+                        uint16_t data) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    out16(PCI_REG_CONFIG_DATA, data);
+}
+
+void pci_config_write8(const pci_address_t* addr,
+                       uint16_t offset,
+                       uint8_t data) {
+    out32(PCI_REG_CONFIG_ADDRESS, pci_config_pack_address(addr, offset));
+    out8(PCI_REG_CONFIG_DATA, data);
+}
+
+int pci_scanbus(pci_scan_state_t* state) {
+    pci_config_space_t config;
+    for (;;) {
+        config.words[0] = pci_config_read32(&state->next_addr, 0);
+        state->addr = state->next_addr;
+        if (++state->next_addr.function == 0x8) {
+            state->next_addr.function = 0;
+            if (++state->next_addr.device == 0x20) {
+                state->next_addr.device = 0;
+                if (++state->next_addr.bus == PCI_MAX_BUSSES) {
+                    return 0;
+                }
             }
+        }
+
+        if (config.words[0] != 0xFFFFFFFFUL) {
+            state->vendor_id = config.vendorId;
+            state->vendor_id = config.device_id;
+            return 1;
         }
     }
 }
 
-uint8_t pci_read8(uint32_t id, uint32_t reg) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    return in8(PCI_CONFIG_DATA + (reg & 0x03));
-}
+int pci_find_device(uint16_t vendor_id,
+                    uint16_t device_id,
+                    pci_address_t* addr_out) {
+    pci_scan_state_t bus_scan = {};
 
-uint16_t pci_read16(uint32_t id, uint32_t reg) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    return in16(PCI_CONFIG_DATA + (reg & 0x02));
-}
-
-uint32_t pci_read32(uint32_t id, uint32_t reg) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    return in32(PCI_CONFIG_DATA);
-}
-
-void pci_write8(uint32_t id, uint32_t reg, uint8_t data) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    out8(PCI_CONFIG_DATA + (reg & 0x03), data);
-}
-
-void pci_write16(uint32_t id, uint32_t reg, uint16_t data) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    out16(PCI_CONFIG_DATA + (reg & 0x02), data);
-}
-
-void pci_write32(uint32_t id, uint32_t reg, uint32_t data) {
-    uint32_t addr = 0x80000000 | id | (reg & 0xfc);
-    out32(PCI_CONFIG_ADDR, addr);
-    out32(PCI_CONFIG_DATA, data);
-}
-
-static void pci_read_bar(uint32_t id, uint32_t index, uint32_t* addr,
-                         uint32_t* mask) {
-    uint32_t reg = PCI_CONFIG_BAR0 + index * sizeof(uint32_t);
-    // get address
-    *addr = pci_read32(id, reg);
-
-    // find out size of bar
-    pci_write32(id, reg, 0xffffffff);
-    *mask = pci_read32(id, reg);
-
-    // restore address
-    pci_write32(id, reg, *addr);
-}
-
-void pci_get_bar(pci_bar_t* bar, uint32_t id, uint32_t index) {
-    // read pci bar register
-    uint32_t address_low;
-    uint32_t mask_low;
-    pci_read_bar(id, index, &address_low, &mask_low);
-
-    if (address_low & PCI_BAR_64) {
-        // 64 bit mmio
-        uint32_t address_high;
-        uint32_t mask_high;
-        pci_read_bar(id, index + 1, &address_high, &mask_high);
-
-        bar->u.address =
-                (((uintptr_t)address_high << 32) | (address_low & ~0xf));
-        bar->size = ~(((uint64_t)mask_high << 32) | (mask_low & ~0xf)) + 1;
-        bar->flags = address_low & 0xf;
-    } else if (address_low & PCI_BAR_IO) {
-        // io register
-        bar->u.port = (uint16_t)(address_low & ~0x3);
-        bar->size = (uint16_t)(~(mask_low & ~0x3) + 1);
-        bar->flags = address_low & 0x3;
-    } else {
-        // 32 bit mmio
-        bar->u.address = (uintptr_t)(address_low & ~0xf);
-        bar->size = ~(mask_low & ~0xf) + 1;
-        bar->flags = address_low & 0xf;
+    while (pci_scanbus(&bus_scan)) {
+        if (bus_scan.vendor_id == vendor_id &&
+            bus_scan.device_id == device_id) {
+            *addr_out = bus_scan.addr;
+            return 1;
+        }
     }
+    return 0;
+}
+
+void pci_set_BAR(const pci_address_t* addr, int index, uint32_t value) {
+    pci_config_write32(addr, offsetof(pci_config_space_t, BAR[index]), value);
+}
+
+uint32_t pci_get_BAR(const pci_address_t* addr, int index) {
+    uint32_t bar =
+            pci_config_read32(addr, offsetof(pci_config_space_t, BAR[index]));
+
+    uint32_t mask = (bar & PCI_CONF_BAR_IO) ? 0x3 : 0xf;
+    return bar & ~mask;
+}
+
+void pci_set_mem_enable(const pci_address_t* addr, int enable) {
+    uint16_t command =
+            pci_config_read16(addr, offsetof(pci_config_space_t, command));
+
+    /* Mem space enable, IO space enable, bus mastering. */
+    const uint16_t flags = 0x0007;
+
+    if (enable) {
+        command |= flags;
+    } else {
+        command &= ~flags;
+    }
+
+    pci_config_write16(addr, offsetof(pci_config_space_t, command), command);
 }

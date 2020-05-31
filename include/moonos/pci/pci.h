@@ -1,105 +1,132 @@
 #ifndef __PCI_H__
 #define __PCI_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define PCI_MAKE_ID(bus, dev, func) \
-    (((bus) << 16) | ((dev) << 11) | ((func) << 8))
+#ifndef NULL
+#define NULL 0
+#endif
 
-// I/O Ports
-#define PCI_CONFIG_ADDR 0xcf8
-#define PCI_CONFIG_DATA 0xcfC
+#ifndef offsetof
+#define offsetof(type, member) ((uint32_t)(&((type*)NULL)->member))
+#endif
 
-// Header Type
-#define PCI_TYPE_MULTIFUNC 0x80
-#define PCI_TYPE_GENERIC 0x00
-#define PCI_TYPE_PCI_BRIDGE 0x01
-#define PCI_TYPE_CARDBUS_BRIDGE 0x02
+typedef union PCIConfigSpace {
+    uint32_t words[16];
+    struct {
+        uint16_t vendorId;
+        uint16_t device_id;
+        uint16_t command;
+        uint16_t status;
+        uint16_t revision_id;
+        uint8_t subclass;
+        uint8_t class_code;
+        uint8_t cache_line_size;
+        uint8_t lat_timer;
+        uint8_t header_type;
+        uint8_t bist;
+        uint32_t BAR[6];
+        uint32_t card_bus_cis;
+        uint16_t subsys_vendor_id;
+        uint16_t subsys_id;
+        uint32_t expansion_rom_addr;
+        uint32_t reserved0;
+        uint32_t reserved1;
+        uint8_t intr_line;
+        uint8_t intr_pin;
+        uint8_t min_grant;
+        uint8_t max_latency;
+    };
+} __attribute__((__packed__)) pci_config_space_t;
 
-// PCI Configuration Registers
-#define PCI_CONFIG_VENDOR_ID 0x00
-#define PCI_CONFIG_DEVICE_ID 0x02
-#define PCI_CONFIG_COMMAND 0x04
-#define PCI_CONFIG_STATUS 0x06
-#define PCI_CONFIG_REVISION_ID 0x08
-#define PCI_CONFIG_PROG_INTF 0x09
-#define PCI_CONFIG_SUBCLASS 0x0a
-#define PCI_CONFIG_CLASS_CODE 0x0b
-#define PCI_CONFIG_CACHELINE_SIZE 0x0c
-#define PCI_CONFIG_LATENCY 0x0d
-#define PCI_CONFIG_HEADER_TYPE 0x0e
-#define PCI_CONFIG_BIST 0x0f
+typedef struct PCIAddress {
+    uint8_t bus;
+    uint8_t device;
+    uint8_t function;
+} pci_address_t;
 
-// Type 0x00 (Generic) Configuration Registers
-#define PCI_CONFIG_BAR0 0x10
-#define PCI_CONFIG_BAR1 0x14
-#define PCI_CONFIG_BAR2 0x18
-#define PCI_CONFIG_BAR3 0x1c
-#define PCI_CONFIG_BAR4 0x20
-#define PCI_CONFIG_BAR5 0x24
-#define PCI_CONFIG_CARDBUS_CIS 0x28
-#define PCI_CONFIG_SUBSYSTEM_VENDOR_ID 0x2c
-#define PCI_CONFIG_SUBSYSTEM_DEVICE_ID 0x2e
-#define PCI_CONFIG_EXPANSION_ROM 0x30
-#define PCI_CONFIG_CAPABILITIES 0x34
-#define PCI_CONFIG_INTERRUPT_LINE 0x3c
-#define PCI_CONFIG_INTERRUPT_PIN 0x3d
-#define PCI_CONFIG_MIN_GRANT 0x3e
-#define PCI_CONFIG_MAX_LATENCY 0x3f
-
-// ------------------------------------------------------------------------------------------------
-// PCI BAR
-
-#define PCI_BAR_IO 0x01
-#define PCI_BAR_LOWMEM 0x02
-#define PCI_BAR_64 0x04
-#define PCI_BAR_PREFETCH 0x08
-
-/**
- *  Base Address Registers
- */
-struct PCIBAR {
-    union {
-        uintptr_t address;
-        uint16_t port;
-    } u;
-    uint64_t size;
-    uint32_t flags;
-};
-typedef struct PCIBAR pci_bar_t;
-
-/**
- * @brief
- *
- */
-struct PCI_DEVICE_INFO {
+typedef struct PCIScanState {
     uint16_t vendor_id;
     uint16_t device_id;
-    uint8_t class_code;
-    uint8_t sub_class;
-    uint8_t progIntf;
-};
-typedef struct PCI_DEVICE_INFO pci_device_info_t;
+    pci_address_t next_addr;
+    pci_address_t addr;
+} pci_scan_state_t;
 
-struct PCI_DRIVER {
-    void (*init)(uint32_t id, pci_device_info_t* info);
-};
-typedef struct PCI_DRIVER pci_driver_t;
+// BAR bits
+#define PCI_CONF_BAR_IO 0x01
+#define PCI_CONF_BAR_64BIT 0x04
+#define PCI_CONF_BAR_PREFETCH 0x08
 
-uint8_t pci_read8(uint32_t id, uint32_t reg);
-uint16_t pci_read16(uint32_t id, uint32_t reg);
-uint32_t pci_read32(uint32_t id, uint32_t reg);
+/*
+ * PCI_ConfigRead32 --
+ * PCI_ConfigRead16 --
+ * PCI_ConfigRead8 --
+ * PCI_ConfigWrite32 --
+ * PCI_ConfigWrite16 --
+ * PCI_ConfigWrite8 --
+ *
+ *    Access a device's PCI configuration space, using configuration
+ *    mechanism #1. All new machines should use method #1, method #2
+ *    is for legacy compatibility.
+ *
+ *    See http://www.osdev.org/wiki/PCI
+ */
 
-void pci_write8(uint32_t id, uint32_t reg, uint8_t data);
-void pci_write16(uint32_t id, uint32_t reg, uint16_t data);
-void pci_write32(uint32_t id, uint32_t reg, uint32_t data);
+uint32_t pci_config_read32(const pci_address_t* addr, uint16_t offset);
+uint16_t pci_config_read16(const pci_address_t* addr, uint16_t offset);
+uint8_t pci_config_read8(const pci_address_t* addr, uint16_t offset);
 
-void pci_init(void);
-void pci_get_bar(pci_bar_t* bar, uint32_t id, uint32_t index);
+void pci_config_write32(const pci_address_t* addr, uint16_t offset,
+                        uint32_t data);
+void pci_config_write16(const pci_address_t* addr, uint16_t offset,
+                        uint16_t data);
+void pci_config_write8(const pci_address_t* addr, uint16_t offset,
+                       uint8_t data);
+
+/*
+ * PCI_ScanBus --
+ *
+ *    Scan the PCI bus for devices. Before starting a scan,
+ *    the caller should zero the PCIScanState structure.
+ *    Every time this function is called, it returns the next
+ *    device in sequence.
+ *
+ *    Returns TRUE if a device was found, leaving that device's
+ *    vendorId, productId, and address in 'state'.
+ *
+ *    Returns FALSE if there are no more devices.
+ */
+int pci_scanbus(pci_scan_state_t* state);
+/*
+ * PCI_FindDevice --
+ *
+ *    Scan the PCI bus for a device with a specific vendor and device ID.
+ *
+ *    On success, returns TRUE and puts the device address into 'addrOut'.
+ *    If the device was not found, returns FALSE.
+ */
+int pci_find_device(uint16_t vendor_id, uint16_t device_id,
+                    pci_address_t* addr_out);
+/*
+ * PCI_SetBAR --
+ *
+ *    Set one of a device's Base Address Registers to the provided value.
+ */
+void pci_set_BAR(const pci_address_t* addr, int index, uint32_t value);
+uint32_t pci_get_BAR(const pci_address_t* addr, int index);
+/*
+ * PCI_SetMemEnable --
+ *
+ *    Enable or disable a device's memory and IO space. This must be
+ *    called to enable a device's resources after setting all
+ *    applicable BARs. Also enables/disables bus mastering.
+ */
+void pci_set_mem_enable(const pci_address_t* addr, int enable);
 
 #ifdef __cplusplus
 }
