@@ -156,7 +156,7 @@ void main(uintptr_t mb_info_phys) {
     buddy_setup();
     acpi_init();
     ints_setup();
-    // pci_init();
+    pci_init();
 
     scheduler_setup();
     // test_mapping();

@@ -73,6 +73,7 @@ executable("kernel") {
         "cpu/cpuid.S",
         "cpu/cpu_detect.c",
         "pci/pci.c",
+        "pci/driver/vmware/svga/svga.c",
     ]
 
     include_dirs = [

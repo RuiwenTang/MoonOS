@@ -1,5 +1,6 @@
 #include <moonos/ioport.h>
 #include <moonos/kprintf.h>
+#include <moonos/pci/driver/vmware/svga/svga.h>
 #include <moonos/pci/pci.h>
 #include <stdint.h>
 
@@ -74,7 +75,7 @@ int pci_scanbus(pci_scan_state_t* state) {
 
         if (config.words[0] != 0xFFFFFFFFUL) {
             state->vendor_id = config.vendorId;
-            state->vendor_id = config.device_id;
+            state->device_id = config.device_id;
             return 1;
         }
     }
@@ -121,4 +122,47 @@ void pci_set_mem_enable(const pci_address_t* addr, int enable) {
     }
 
     pci_config_write16(addr, offsetof(pci_config_space_t, command), command);
+}
+
+static void paint_screen(uint32_t color) {
+    uint32_t* fb = (uint32_t*)gSVGA.fb_mem;
+    int x, y;
+    static uint32_t fence = 0;
+    /*
+     * Flow control: Before we re-write the beginning of the
+     * framebuffer, make sure the host has at least finished drawing
+     * the beginning of the last frame.
+     *
+     * This isn't as strict as it should be: For proper 2D flow
+     * control, we really need to either do a full sync at the end of
+     * each frame, or double-buffer (alternating buffers on every other
+     * frame). This method can produce glitches, but it's still decent
+     * for benchmarking purposes.
+     */
+
+    svga_sync_to_fence(fence);
+    fence = svga_insert_fence();
+
+    /*
+     * Update the screen, pixel by pixel.
+     */
+
+    for (y = 0; y < gSVGA.height; y++) {
+        uint32_t* row = fb;
+        fb = (uint32_t*)(gSVGA.pitch + (uint8_t*)fb);
+
+        for (x = 0; x < gSVGA.width; x++) {
+            *(row++) = color;
+            svga_update(x, y, 1, 1);
+        }
+    }
+}
+
+void pci_init(void) {
+    kprintf("pci init ---------- \n");
+    svga_init();
+    svga_set_mode(1024, 768, 32);
+    while (1) {
+        paint_screen(0x747cba);
+    }
 }

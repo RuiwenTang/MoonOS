@@ -128,6 +128,8 @@ uint32_t pci_get_BAR(const pci_address_t* addr, int index);
  */
 void pci_set_mem_enable(const pci_address_t* addr, int enable);
 
+void pci_init(void);
+
 #ifdef __cplusplus
 }
 #endif
