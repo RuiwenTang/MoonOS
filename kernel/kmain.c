@@ -8,6 +8,7 @@
 #include <moonos/memory/buddy.h>
 #include <moonos/memory/paging.h>
 #include <moonos/pci/pci.h>
+#include <moonos/thread/mutex.h>
 #include <moonos/thread/thread.h>
 #include <multiboot/multiboot.h>
 #include <string.h>
@@ -80,21 +81,21 @@ static void buddy_test(void) {
 }
 #endif
 
+static void wait(void) {
+    for (int i = 0; i != 100000000; i++)
+        ;
+}
+
+static struct mutex mtx;
+
 static int threadx(void* arg) {
     const int id = (intptr_t)arg;
     int count = 5;
     while (count) {
-        /**
-         * You might be surprised what effects may cause
-         * unsychronized calls to printf from different threads.
-         * But synchronization is a subject of different week,
-         * so far we just block interrupts while we printing
-         * something.
-         **/
-        const int enabled = local_int_save();
-
+        mutex_lock(&mtx);
+        wait();
         kprintf("%d", id);
-        local_int_restore(enabled);
+        mutex_unlock(&mtx);
         count--;
     }
     return 0;
@@ -110,6 +111,8 @@ static int thread0(void* unused) {
 
 static int init(void* unused) {
     (void)unused;
+
+    mutex_setup(&mtx);
 
     thread_t* thread = thread_create(&thread0, 0);
     int ret;
@@ -128,11 +131,9 @@ static int init(void* unused) {
     thread_start(thread2);
 
     while (1) {
-        const int enabled = local_int_save();
-
-        // kprintf("I'm thread 0\n");
+        mutex_lock(&mtx);
         // kprintf("0");
-        local_int_restore(enabled);
+        mutex_unlock(&mtx);
     }
     return 0;
 }
@@ -176,5 +177,5 @@ void main(uintptr_t mb_info_phys) {
     scheduler_idle();
     kprintf("end kmain\n");
     // while (1)
-    //     ;
+    // ;
 }

@@ -68,6 +68,8 @@ executable("kernel") {
         "memory/slab.c",
         "thread/thread.c",
         "thread/switch.S",
+        "thread/lock.c",
+        "thread/mutex.c",
         "util/list.c",
         "cpu/acpi.c",
         "cpu/cpuid.S",

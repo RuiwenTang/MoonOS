@@ -280,9 +280,10 @@ start64:
      * which is much better than assembly.
      **/
     cld
+    sub $0x28, %rsp
 	movabsq $main, %rax
 	call *%rax
-
+    add $0x28, %rsp
     cli
 1:
     hlt
