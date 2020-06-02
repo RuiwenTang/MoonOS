@@ -70,6 +70,7 @@ executable("kernel") {
         "thread/switch.S",
         "thread/lock.c",
         "thread/mutex.c",
+        "thread/condition.c",
         "util/list.c",
         "cpu/acpi.c",
         "cpu/cpuid.S",

@@ -8,6 +8,7 @@
 #include <moonos/memory/buddy.h>
 #include <moonos/memory/paging.h>
 #include <moonos/pci/pci.h>
+#include <moonos/thread/condition.h>
 #include <moonos/thread/mutex.h>
 #include <moonos/thread/thread.h>
 #include <multiboot/multiboot.h>
@@ -101,6 +102,26 @@ static int threadx(void* arg) {
     return 0;
 }
 
+static int threadp(void* arg) {
+    struct condition* cv = (struct condition*)arg;
+    struct mutex mutex;
+    kprintf("thread p start\n");
+    mutex_setup(&mutex);
+
+    condition_wait(cv, &mutex);
+
+    kprintf("thread p wait finish\n");
+    return 0;
+}
+
+static int threadv(void* arg) {
+    struct condition* cv = (struct condition*)arg;
+    kprintf("thread v start\n");
+    notify_one(cv);
+    kprintf("thread v finish\n");
+    return 0;
+}
+
 static int thread0(void* unused) {
     (void)unused;
     for (uint64_t i = 0; i != 100000000; i++)
@@ -127,8 +148,16 @@ static int init(void* unused) {
     thread_t* thread1 = thread_create(&threadx, (void*)1);
     thread_t* thread2 = thread_create(&threadx, (void*)2);
 
+    struct condition cv;
+    condition_setup(&cv);
+
+    thread_t* threadp_p = thread_create(&threadp, (void*)&cv);
+    thread_t* threadv_p = thread_create(&threadv, (void*)&cv);
+
     thread_start(thread1);
     thread_start(thread2);
+    thread_start(threadp_p);
+    thread_start(threadv_p);
 
     while (1) {
         mutex_lock(&mtx);
