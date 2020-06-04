@@ -16,6 +16,8 @@ typedef uint64_t pte_t;
 #define PTE_WRITE ((pte_t)1 << 1)
 #define PTE_USER ((pte_t)1 << 2)
 
+extern uintptr_t initial_cr3;
+
 /**
  * All required paging setup was actually done in bootstrap.S,
  * so this function actually just creates a new page table that maps
@@ -27,6 +29,8 @@ typedef uint64_t pte_t;
  * logical address for every physical address (may be not the only one).
  **/
 void paging_setup(void);
+
+size_t pt_index(uintptr_t addr, int lvl);
 
 #ifdef __cplusplus
 }

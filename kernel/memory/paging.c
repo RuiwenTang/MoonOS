@@ -4,6 +4,8 @@
 #include <moonos/memory/paging.h>
 #include <string.h>
 
+uintptr_t initial_cr3;
+
 static pte_t pt_alloc(void) {
     /**
      * bootstrap.S maps only lower 4GB of the physical memory, so
@@ -30,6 +32,11 @@ static pte_t pt_alloc(void) {
 static int pt_shift(int lvl) {
     static const int offs[] = {0, 12, 21, 30, 39};
     return offs[lvl];
+}
+
+size_t pt_index(uintptr_t addr, int lvl) {
+    static const int mask[] = {0xfff, 0x1ff, 0x1ff, 0x1ff, 0x1ff};
+    return (addr >> pt_shift(lvl)) & mask[lvl];
 }
 
 static int pt_offs(uintptr_t addr, int lvl) {
