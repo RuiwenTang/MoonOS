@@ -31,6 +31,9 @@ extern uintptr_t initial_cr3;
 void paging_setup(void);
 
 size_t pt_index(uintptr_t addr, int lvl);
+uintptr_t pt_addr(const pte_t* pml4, uintptr_t virt_addr);
+void pt_unmap(pte_t *pml4, uintptr_t vaddr, size_t size);
+int pt_map(pte_t *pml4, uintptr_t vaddr, size_t size, pte_t flags);
 
 #ifdef __cplusplus
 }

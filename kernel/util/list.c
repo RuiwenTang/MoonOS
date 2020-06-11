@@ -28,7 +28,7 @@ void list_del(list_head_t* node) {
 
 int list_empty(const list_head_t* list) { return list->next == list; }
 
-static void __list_splice(list_head_t* first, list_head_t* last,
+void __list_splice(list_head_t* first, list_head_t* last,
                           list_head_t* prev) {
     list_head_t* next = prev->next;
 
