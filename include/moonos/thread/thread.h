@@ -1,6 +1,8 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+#include <moonos/memory/mm.h>
+#include <moonos/thread/condition.h>
 #include <moonos/thread/lock.h>
 #include <moonos/util/list.h>
 #include <stdint.h>
@@ -20,9 +22,11 @@ typedef enum thread_state thread_state_t;
 struct thread {
     list_head_t ll;
     struct spinlock lock;
+    struct condition cv;
     uintptr_t stack_phys;
     int stack_order;
     thread_state_t state;
+    mm_t* mm;
     void* context;
     int retval;
 };

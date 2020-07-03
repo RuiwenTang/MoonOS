@@ -33,6 +33,7 @@ static void thread_place(thread_t* me) {
     spin_lock(&current->lock);
     if (current->state == THREAD_FINISHED) {
         current->state = THREAD_DEAD;
+        notify_one(&current->cv);
     }
     spin_unlock(&current->lock);
     current = me;
@@ -75,6 +76,13 @@ thread_t* __thread_create(int stack_order, int (*fptr)(void*), void* arg) {
         return 0;
     }
 
+    thread->mm = mm_create();
+    if (thread->mm == NULL) {
+        buddy_free(thread->stack_phys, stack_order);
+        thread_free(thread);
+        return 0;
+    }
+
     const size_t stack_size = PAGE_SIZE << stack_order;
 
     char* ptr = (char*)va(thread->stack_phys);
@@ -88,6 +96,7 @@ thread_t* __thread_create(int stack_order, int (*fptr)(void*), void* arg) {
     frame->rflags = 2;
 
     spin_setup(&thread->lock);
+    condition_setup(&thread->cv);
     thread->context = frame;
     return thread;
 }
@@ -133,6 +142,7 @@ void thread_join(thread_t* thread, int* ret) {
 
 void thread_destroy(thread_t* thread) {
     buddy_free(thread->stack_phys, thread->stack_order);
+    mm_release(thread->mm);
     thread_free(thread);
 }
 
