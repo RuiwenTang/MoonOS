@@ -128,10 +128,8 @@ void thread_exit(int ret) {
 void thread_join(thread_t* thread, int* ret) {
     int enabled = spin_lock_int_save(&thread->lock);
 
-    while (thread->state != THREAD_DEAD) {
-        spin_unlock_int_restore(&thread->lock, enabled);
-        schedule();
-        enabled = spin_lock_int_save(&thread->lock);
+    while(thread->state != THREAD_DEAD) {
+        condition_wait_spin_int(&thread->cv, &thread->lock);
     }
     spin_unlock_int_restore(&thread->lock, enabled);
 

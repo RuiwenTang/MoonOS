@@ -107,7 +107,7 @@ static int __pt_map(pte_t *pt, uint64_t virt, uint64_t size, pte_t pte_flags,
 
 		if (!(pte & PTE_PRESENT)) {
 			if (leaf) {
-				const uintptr_t phys = buddy_alloc(order);
+				const uintptr_t phys = (const uintptr_t) buddy_alloc(order);
 				const pte_t flags = pte_flags | pte_large;
 
 				if (phys) {

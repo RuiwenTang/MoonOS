@@ -6,8 +6,11 @@
 #include <moonos/memory.h>
 #include <moonos/memory/balloc.h>
 #include <moonos/memory/buddy.h>
+#include <moonos/memory/misc.h>
+#include <moonos/memory/mm.h>
 #include <moonos/memory/paging.h>
 #include <moonos/pci/pci.h>
+#include <moonos/ramfs/ramfs.h>
 #include <moonos/thread/condition.h>
 #include <moonos/thread/mutex.h>
 #include <moonos/thread/thread.h>
@@ -187,6 +190,9 @@ void main(uintptr_t mb_info_phys) {
     acpi_init();
     ints_setup();
     pci_init();
+    mm_setup();
+    ramfs_setup();
+    misc_setup(info);
 
     scheduler_setup();
     // test_mapping();

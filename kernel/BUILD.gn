@@ -67,6 +67,7 @@ executable("kernel") {
         "memory/buddy.c",
         "memory/slab.c",
         "memory/mm.c",
+        "memory/misc.c",
         "thread/thread.c",
         "thread/switch.S",
         "thread/lock.c",
@@ -78,9 +79,15 @@ executable("kernel") {
         "cpu/cpu_detect.c",
         "pci/pci.c",
         "pci/driver/vmware/svga/svga.c",
+        "ramfs/initramfs.c",
+        "ramfs/ramfs.c",
     ]
 
     include_dirs = [
         "//include"
+    ]
+
+    deps = [
+        "//initramfs"
     ]
 }

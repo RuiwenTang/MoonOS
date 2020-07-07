@@ -1,0 +1,26 @@
+
+action("make_initimg") {
+    script = "make_initrd.py"
+
+    args = [
+            rebase_path(target_gen_dir),
+            rebase_path(target_out_dir) + "/../../initrd.img",
+        ]
+
+    outputs = [
+        "$target_out_dir/../../initrd.img",
+    ]
+}
+
+copy("readme") {
+    sources = ["README.md"]
+    outputs = ["$target_gen_dir/README.md"]
+}
+
+group("initramfs") {
+
+    deps = [
+        ":readme",
+        ":make_initimg",
+    ]
+}
