@@ -184,6 +184,7 @@ void main(uintptr_t mb_info_phys) {
     const struct multiboot_info* info =
             (const struct multiboot_info*)va(mb_info_phys);
 
+    misc_setup(info);
     balloc_setup(info);
     paging_setup();
     buddy_setup();
@@ -192,7 +193,6 @@ void main(uintptr_t mb_info_phys) {
     pci_init();
     mm_setup();
     ramfs_setup();
-    misc_setup(info);
 
     scheduler_setup();
     // test_mapping();
