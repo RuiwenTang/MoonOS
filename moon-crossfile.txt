@@ -1,0 +1,13 @@
+[binaries]
+c = 'x86_64-moonos-elf-gcc'
+cpp = 'x86_64-moonos-elf-g++'
+ar = 'x86_64-moonos-elf-ar'
+strip = 'x86_64-moonos-elf-strip'
+ld = 'x86_64-moonos-elf-g++'
+
+[host_machine]
+system = 'moon'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
