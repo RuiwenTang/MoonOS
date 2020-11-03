@@ -1,11 +1,16 @@
 
+kernel_headers = [
+    'include/moon/memory.h',
+    'include/moon/hal.hpp',
+    'include/multiboot/multiboot.h',
+]
 
 kernel_src = [
     'src/arch/x86_64/entry.S',
     'src/main.cc',
 ]
 
-srcs = kernel_src
+srcs = [kernel_src, kernel_headers ]
 
 kernel_incs = include_directories('include')
 
@@ -32,8 +37,6 @@ kernel_cpp_args = [
     '-std=c++14',
 ]
 
-add_project_arguments(kernel_c_args, language: ['c', 'cpp'])
-add_project_arguments(kernel_cpp_args, language: 'cpp')
 
 kernel_link_args = [
     '-T', meson.current_source_dir() + '/link64.ld',
@@ -45,4 +48,10 @@ kernel_link_args = [
     'max-page-size=0x1000'
 ]
 
-executable('kernel.bin', sources: srcs, include_directories: kernel_incs, link_args: kernel_link_args)
+executable('kernel.bin', sources: srcs,
+    include_directories: kernel_incs,
+    link_args: kernel_link_args,
+    c_args: kernel_c_args,
+    cpp_args: [kernel_c_args, kernel_cpp_args],
+    dependencies: [klibc_dep]
+    )

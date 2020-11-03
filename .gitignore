@@ -1,1 +1,3 @@
 out/*
+builddir
+.vscode/.ccls-cache
