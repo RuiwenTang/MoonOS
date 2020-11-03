@@ -58,13 +58,13 @@ TTY* TTY::Instance() { return &gTTY; }
 TTY::TTY()
     : fRow(0),
       fColumn(0),
-      fColor(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK)),
+      fColor(vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK)),
       fBuffer(VGA_MEMORY) {}
 
 void TTY::Init() {
   fRow = 0;
   fColumn = 0;
-  fColor = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+  fColor = vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK);
   fBuffer = VGA_MEMORY;
   for (size_t y = 0; y < VGA_HEIGHT; y++) {
     for (size_t x = 0; x < VGA_WIDTH; x++) {
