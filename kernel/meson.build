@@ -1,13 +1,15 @@
 
 kernel_headers = [
-    'include/moon/memory.h',
     'include/moon/hal.hpp',
+    'include/moon/memory.h',
+    'include/moon/tty.hpp',
     'include/multiboot/multiboot.h',
 ]
 
 kernel_src = [
     'src/arch/x86_64/entry.S',
     'src/main.cc',
+    'src/tty.cc',
 ]
 
 srcs = [kernel_src, kernel_headers ]
