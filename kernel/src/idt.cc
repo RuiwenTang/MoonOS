@@ -1,4 +1,5 @@
 #include <moon/idt.hpp>
+#include <moon/io.hpp>
 #ifdef DEBUG
 #include "kprintf.hpp"
 #endif
@@ -141,9 +142,86 @@ void IDT::Init() {
   kprintf("idt_ptr = %X\n", (uintptr_t)&gIdts);
 #endif
   idt_flush(&idt_ptr);
+
+  IO::Write8(0x20, 0x11);
+  IO::Write8(0xA0, 0x11);
+  IO::Write8(0x21, 0x20);
+  IO::Write8(0xA1, 0x28);
+  IO::Write8(0x21, 0x04);
+  IO::Write8(0xA1, 0x02);
+  IO::Write8(0x21, 0x01);
+  IO::Write8(0xA1, 0x01);
+  IO::Write8(0x21, 0x00);
+  IO::Write8(0xA1, 0x00);
+
+  SetGate(32, (uint64_t)irq0, 0x08, 0x8E);
+  SetGate(33, (uint64_t)irq1, 0x08, 0x8E);
+  SetGate(34, (uint64_t)irq2, 0x08, 0x8E);
+  SetGate(35, (uint64_t)irq3, 0x08, 0x8E);
+  SetGate(36, (uint64_t)irq4, 0x08, 0x8E);
+  SetGate(37, (uint64_t)irq5, 0x08, 0x8E);
+  SetGate(38, (uint64_t)irq6, 0x08, 0x8E);
+  SetGate(39, (uint64_t)irq7, 0x08, 0x8E);
+  SetGate(40, (uint64_t)irq8, 0x08, 0x8E);
+  SetGate(41, (uint64_t)irq9, 0x08, 0x8E);
+  SetGate(42, (uint64_t)irq10, 0x08, 0x8E);
+  SetGate(43, (uint64_t)irq11, 0x08, 0x8E);
+  SetGate(44, (uint64_t)irq12, 0x08, 0x8E);
+  SetGate(45, (uint64_t)irq13, 0x08, 0x8E);
+  SetGate(46, (uint64_t)irq14, 0x08, 0x8E);
+  SetGate(47, (uint64_t)irq15, 0x08, 0x8E);
+
+  __asm__ __volatile__("sti");
+
+  RegisterInterruptHandler(IPI_HALT, IPIHalt);
 }
 
-extern "C" void isr_handler(int int_num, void* regs, int err_code) {}
+void IDT::RegisterInterruptHandler(uint8_t interrupt, isr_t handler,
+                                   void* data) {
+  gInterruptHandlers[interrupt].handler = handler;
+  gInterruptHandlers[interrupt].data = data;
+}
+
+uint8_t IDT::ReserveUnusedInterrupt() {
+  uint8_t interrupt = 0xFF;
+  for (uint32_t i = IRQ0 + 16; i < 255 && interrupt == 0xFF; i++) {
+    if (!gInterruptHandlers[i].handler) {
+      interrupt = i;
+    }
+  }
+  return interrupt;
+}
+
+void IDT::DisablePIC() {
+  IO::Write8(0x20, 0x11);
+  IO::Write8(0xA0, 0x11);
+  IO::Write8(0x21, 0xF0);  // Remap IRQs on both PICs to 0xF0-0xF8
+  IO::Write8(0xA1, 0xF0);
+  IO::Write8(0x21, 0x04);
+  IO::Write8(0xA1, 0x02);
+  IO::Write8(0x21, 0x01);
+  IO::Write8(0xA1, 0x01);
+
+  IO::Write8(0x21, 0xFF);  // Mask all interrupts
+  IO::Write8(0xA1, 0xFF);
+}
+
+int IDT::GetErrCode() { return errCode; }
+
+extern "C" void isr_handler(int int_num, void* regs, int err_code) {
+  errCode = err_code;
+  if (gInterruptHandlers[int_num].handler != 0) {
+    gInterruptHandlers[int_num].handler(gInterruptHandlers[int_num].data, regs);
+  } else if (int_num == 0x69) {
+#ifdef DEBUG
+    kprintf("sys call\n");
+#endif
+  } else {
+#ifdef DEBUG
+    kprintf("isr int_num = %d\n", int_num);
+#endif
+  }
+}
 
 extern "C" void irq_handler(int int_num, void* regs) {}
 extern "C" void ipi_handler(int int_num, void* regs) {}

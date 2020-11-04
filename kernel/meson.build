@@ -4,6 +4,8 @@ kernel_headers = [
     'include/moon/memory.h',
     'include/moon/tty.hpp',
     'include/moon/idt.hpp',
+    'include/moon/io.hpp',
+    'include/moon/paging.hpp',
     'include/multiboot/multiboot.h',
 ]
 
@@ -13,6 +15,9 @@ kernel_src = [
     'src/main.cc',
     'src/tty.cc',
     'src/idt.cc',
+    'src/io.cc',
+    'src/hal.cc',
+    'src/runtime.cc',
     'src/kprintf.hpp',
     'src/kprintf.cc',
 ]

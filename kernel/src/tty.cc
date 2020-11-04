@@ -47,13 +47,15 @@ static inline uint16_t vga_entry(uint8_t uc, uint8_t color) {
   return (uint16_t)uc | ((uint16_t)color << 8);
 }
 
-static TTY gTTY;
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
 static uint16_t* VGA_MEMORY = (uint16_t*)VA(0xB8000);
 
-TTY* TTY::Instance() { return &gTTY; }
+TTY* TTY::Instance() { 
+  static TTY gTTY{};
+  return &gTTY;
+}
 
 TTY::TTY()
     : fRow(0),
@@ -63,10 +65,10 @@ TTY::TTY()
 
 void TTY::Init() {
   // FIXME: global object not initialized
-  fRow = 0;
-  fColumn = 0;
-  fColor = vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK);
-  fBuffer = VGA_MEMORY;
+  // fRow = 0;
+  // fColumn = 0;
+  // fColor = vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK);
+  // fBuffer = VGA_MEMORY;
   for (size_t y = 0; y < VGA_HEIGHT; y++) {
     for (size_t x = 0; x < VGA_WIDTH; x++) {
       size_t index = y * VGA_WIDTH + x;

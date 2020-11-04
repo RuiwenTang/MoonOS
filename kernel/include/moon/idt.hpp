@@ -6,6 +6,10 @@
 extern "C" {
 #endif
 
+#define IRQ0 32
+#define IPI_HALT 0xFE
+#define IPI_SCHEDULE 0xFD
+
 struct IDTEntry {
   uint16_t base_low;
   uint16_t sel;
@@ -45,4 +49,3 @@ class IDT {
   static void SetGate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags,
                       uint8_t ist = 0);
 };
-
