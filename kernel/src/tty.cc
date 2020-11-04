@@ -62,6 +62,7 @@ TTY::TTY()
       fBuffer(VGA_MEMORY) {}
 
 void TTY::Init() {
+  // FIXME: global object not initialized
   fRow = 0;
   fColumn = 0;
   fColor = vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK);

@@ -9,9 +9,12 @@ kernel_headers = [
 
 kernel_src = [
     'src/arch/x86_64/entry.S',
+    'src/arch/x86_64/idt.S',
     'src/main.cc',
     'src/tty.cc',
     'src/idt.cc',
+    'src/kprintf.hpp',
+    'src/kprintf.cc',
 ]
 
 srcs = [kernel_src, kernel_headers ]

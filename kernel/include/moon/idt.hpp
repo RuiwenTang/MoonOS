@@ -42,7 +42,7 @@ class IDT {
  private:
   static void IPIHalt(void*, void*);
   static void InvalidInterruptHandler(void*, void* r);
-  static void SetGate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags, uint8_t ist = 0);
+  static void SetGate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags,
+                      uint8_t ist = 0);
 };
 
-int errCode = 0;
