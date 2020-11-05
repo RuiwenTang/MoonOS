@@ -17,6 +17,7 @@ kernel_src = [
     'src/idt.cc',
     'src/io.cc',
     'src/hal.cc',
+    'src/paging.cc',
     'src/runtime.cc',
     'src/kprintf.hpp',
     'src/kprintf.cc',

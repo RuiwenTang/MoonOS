@@ -6,6 +6,6 @@
 extern "C" void main(multiboot_info_t* mb_info) { 
     
     TTY::Instance()->Init();
-    HAL::Init(mb_info);
+    HAL::Instance()->Init(mb_info);
     return; 
 }

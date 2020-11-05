@@ -301,6 +301,7 @@ bootstrap_stack_top:
  * on 4 KB boundary.
  **/
 
+.global bootstrap_pml4
 .align PAGE_SIZE
 bootstrap_pml4:
 .space PAGE_SIZE

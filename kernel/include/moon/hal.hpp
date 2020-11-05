@@ -4,13 +4,15 @@
 
 class HAL final {
  public:
-  HAL() = delete;
-  ~HAL() = delete;
 
-  static void Init(multiboot_info_t* mb_info);
+  static HAL* Instance();
+
+  void Init(multiboot_info_t* mb_info);
 
  private:
-  static void InitCore(multiboot_info_t* mb_info);
+  HAL() = default;
+  ~HAL() = default;
+  void InitCore(multiboot_info_t* mb_info);
   
 
 };
