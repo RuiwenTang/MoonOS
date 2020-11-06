@@ -1,0 +1,6 @@
+
+
+option('build_test',
+        type : 'boolean',
+        value : false,
+        description: 'Build unittest this may need addational dependencies')
