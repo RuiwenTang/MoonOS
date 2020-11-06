@@ -5,6 +5,13 @@
 class Paging final {
  public:
   enum : uint64_t {
+    PDE_PRESENT = 1,
+    PDE_WRITABLE = 1 << 1,
+    PDE_USER = 1 << 2,
+    PDE_CACHE_DISABLED = 1 << 4,
+    PDE_2M = 1 << 7,
+    PDPE_2M = 1 << 7,
+    PDE_FRAME = 0xFFFFFFFFFF000,
     PAGE_PRESENT = 1,
     PAGE_WRITABLE = 1 << 1,
     PAGE_USER = 1 << 2,
@@ -28,7 +35,7 @@ class Paging final {
   using pml4_entry_t = uint64_t;
   using page_dir_t = pd_entry_t[PAGE_TABLES_PER_DIR];
   using pdpt_t = pdpt_entry_t[PAGE_DIRS_PER_PDPT];
-  using pml4_t = pml4_entry_t*;
+  using pml4_t = pml4_entry_t[PAGE_PDPTS_PER_PML4];
 
   /**
    * @brief Process Address Info
@@ -50,24 +57,43 @@ class Paging final {
     page_t*** pageTables;
   };
 
+  struct PageTable {
+    uint64_t phys;
+    page_t* virt;
+  };
+
  public:
   static Paging* Instance();
   void InitVirtualMemory();
-  uintptr_t AllocateVirtualMemory(uint64_t size);
-  uintptr_t KernelAllocateVirtualMemory(uint64_t size);
-  void FreeVirtualMemory(uintptr_t pointer, uint64_t size);
-  void KernelFree2MPages(uintptr_t addr, uint64_t amount);
-  void KernelFree4KPages(uintptr_t addr, uint64_t amount);
+  void* AllocateVirtualMemory(uint64_t size);
+  void* KernelAllocateVirtualMemory(uint64_t size);
+  void FreeVirtualMemory(void* pointer, uint64_t size);
+  void KernelFree2MPages(void* addr, uint64_t amount);
+  void KernelFree4KPages(void* addr, uint64_t amount);
+
+  void* Allocate4KPages(uint64_t amount);
+  void* Allocate4KPages(uint64_t, AddressSpace* addressSpace);
+  void* Allocate2MPages(uint64_t amount);
+  void* Allocate1GPages(uint64_t amount);
+
+  void MapVirtualMemory4K(uint64_t phys, uint64_t virt, uint64_t amount);
+  void MapVirtualMemory2M(uint64_t phys, uint64_t virt, uint64_t amount);
+  void MapVirtualMemory1G(uint64_t phys, uint64_t virt, uint64_t amount);
+
+  void KernelMapVirtualMemory4K(uint64_t phys, uint64_t virt, uint64_t amount);
+  void KernelMapVirtualMemory2M(uint64_t phys, uint64_t virt, uint64_t amount);
+  void KernelMapVirtualMemory1G(uint64_t phys, uint64_t virt, uint64_t amount);
 
  private:
   Paging();
   ~Paging() = default;
 
  private:
-  pml4_t fKernelPML4;
-  pdpt_t fKernelPDPT;
-  page_dir_t fKernelDir;
-  page_dir_t fKernelHeapDir;
-  page_t kernelHeapDirTables[PAGE_TABLES_PER_DIR][PAGE_PAGES_PER_TABLE];
-  page_dir_t fIODirs[4];
+  pml4_t fKernelPML4 __attribute__((aligned(4096)));
+  pdpt_t fKernelPDPT __attribute__((aligned(4096)));
+  page_dir_t fKernelDir __attribute__((aligned(4096)));
+  page_dir_t fKernelHeapDir __attribute__((aligned(4096)));
+  page_t kernelHeapDirTables[PAGE_TABLES_PER_DIR][PAGE_PAGES_PER_TABLE]
+      __attribute__((aligned(4096)));
+  page_dir_t fIODirs[4] __attribute__((aligned(4096)));
 };

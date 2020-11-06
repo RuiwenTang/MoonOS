@@ -7,6 +7,8 @@
 /* First address after "canonical hole", beginning of the middle mapping. */
 #define HIGHER_BASE 0xffff800000000000
 
+#define IO_VIRTUAL_BASE (VIRTUAL_BASE - 0x100000000) // VIRTUAL_BASE - 4GB
+
 /* Kernel 64 bit code and data segment selectors. */
 #define KERNEL_CS 0x08
 #define KERNEL_DS 0x10
@@ -20,8 +22,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define VA(x) ((void*)((uintptr_t)x + HIGHER_BASE))
-#define PA(x) ((uintptr_t)x - HIGHER_BASE);
+#define VA(x) ((void*)((uintptr_t)x + VIRTUAL_BASE))
+#define PA(x) ((uintptr_t)x - VIRTUAL_BASE);
 
 static inline void* va(uintptr_t phys) { return VA(phys); }
 

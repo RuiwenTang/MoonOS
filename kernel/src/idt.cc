@@ -139,7 +139,7 @@ void IDT::Init() {
           0xEE /* Allow syscalls to be called from user mode*/, 0);  // Syscall
 
 #ifdef DEBUG
-  kprintf("idt_ptr = %X\n", (uintptr_t)&gIdts);
+  kprintf("idt_ptr = %X\n", ((uintptr_t)&gIdts) >> 32);
 #endif
   idt_flush(&idt_ptr);
 
