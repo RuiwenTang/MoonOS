@@ -15,7 +15,7 @@ void kprintf(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
   char buffer[100];
-  int length = kvsprintf(buffer, format, ap);
+  kvsprintf(buffer, format, ap);
   va_end(ap);
   TTY::Instance()->WriteString(buffer);
 }

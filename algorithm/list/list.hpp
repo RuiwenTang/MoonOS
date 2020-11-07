@@ -11,22 +11,33 @@ namespace algorithm {
 
 /**
  * @brief Base class for linked list
- * 
- * @tparam T 
+ *
+ * @tparam T
  */
 template <class T>
-struct list {
-  using self_type = list<T>;
+struct List {
+  using self_type = List<T>;
 
   T data;
   self_type* next;
   self_type* prev;
 
-  list() : data(), next(this), prev(this) {}
-  virtual ~list() = default;
+  List() : data(), next(this), prev(this) {}
+  List(const T& v) : data(v), next(this), prev(this) {}
+  virtual ~List() = default;
 
-  bool empty() const {
-    return next == this && prev == this;
+  bool Empty() const { return next == this && prev == this; }
+
+  void Add(self_type* node) { add_list_node(node, this, this->next); }
+
+  void AddTail(self_type* node) { add_list_node(node, this->prev, this); }
+
+ private:
+  static void add_list_node(self_type* node, self_type* prev, self_type* next) {
+    node->prev = prev;
+    node->next = next;
+    prev->next = node;
+    next->prev = node;
   }
 };
 }  // namespace algorithm

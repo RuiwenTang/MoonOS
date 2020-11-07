@@ -1,16 +1,26 @@
-/*******************************************************************************
- * Project: moon-os                                                            *
- * File Created: Saturday, 7th November 2020 12:11:35 am                       *
- * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
- * Copyright - 2020                                                            *
- ******************************************************************************/
 #include "list/list.hpp"
 
 #include "gtest/gtest.h"
 
-using IList = algorithm::list<int>;
+using IList = algorithm::List<int>;
 
 TEST(list, list_empty) {
   IList list{};
-  ASSERT_TRUE(list.empty());
+  ASSERT_TRUE(list.Empty());
+}
+
+
+TEST(list, list_add) {
+  IList list{1};
+  IList list2{2};
+
+  list.Add(&list2);
+
+  ASSERT_TRUE(!list.Empty());
+  ASSERT_EQ(list.next, &list2);
+
+  IList list3{3};
+  list.AddTail(&list3);
+  ASSERT_EQ(list.prev, &list3);
+  ASSERT_EQ(list3.next, &list);
 }
