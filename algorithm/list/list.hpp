@@ -31,6 +31,13 @@ struct List {
   void Add(self_type* node) { add_list_node(node, this, this->next); }
 
   void AddTail(self_type* node) { add_list_node(node, this->prev, this); }
+  void Delete(self_type* node) {
+    self_type* p = node->prev;
+    self_type* n = node->next;
+
+    p->next = n;
+    n->prev = p;
+  }
 
  private:
   static void add_list_node(self_type* node, self_type* prev, self_type* next) {
