@@ -7,7 +7,11 @@ algorithm = declare_dependency(
 )
 
 if get_option('build_test')
-
-    executable('list_test', native: true, sources: ['test/list_test.cc'], dependencies: [algorithm])
+    gtest = subproject('gtest').get_variable('gtest_dep')
+    executable('algorithm_test', native: true,
+        sources: [
+            'test/list_test.cc',
+            'test/test_main.cc',
+           ], dependencies: [algorithm, gtest])
 
 endif

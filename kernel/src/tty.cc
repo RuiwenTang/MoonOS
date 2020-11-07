@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * Project: moon-os                                                            *
+ * File Created: Tuesday, 3rd November 2020 1:33:16 pm                         *
+ * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
+ * Copyright - 2020                                                            *
+ ******************************************************************************/
 #include <moon/memory.h>
 #include <string.h>
 
@@ -47,12 +53,11 @@ static inline uint16_t vga_entry(uint8_t uc, uint8_t color) {
   return (uint16_t)uc | ((uint16_t)color << 8);
 }
 
-
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
 static uint16_t* VGA_MEMORY = (uint16_t*)VA(0xB8000);
 
-TTY* TTY::Instance() { 
+TTY* TTY::Instance() {
   static TTY gTTY{};
   return &gTTY;
 }

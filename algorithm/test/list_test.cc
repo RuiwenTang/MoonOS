@@ -1,8 +1,16 @@
+/*******************************************************************************
+ * Project: moon-os                                                            *
+ * File Created: Saturday, 7th November 2020 12:11:35 am                       *
+ * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
+ * Copyright - 2020                                                            *
+ ******************************************************************************/
 #include "list/list.hpp"
 
-#include <iostream>
+#include "gtest/gtest.h"
 
-int main(int argc, const char** argv) {
-  algorithm::list<int> list;
-  return 0;
+using IList = algorithm::list<int>;
+
+TEST(list, list_empty) {
+  IList list{};
+  ASSERT_TRUE(list.empty());
 }

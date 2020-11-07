@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * Project: moon-os                                                            *
+ * File Created: Thursday, 5th November 2020 1:09:22 pm                        *
+ * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
+ * Copyright - 2020                                                            *
+ ******************************************************************************/
 #include <string.h>
 
 #include <moon/idt.hpp>

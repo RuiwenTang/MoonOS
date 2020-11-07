@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * Project: moon-os                                                            *
+ * File Created: Wednesday, 4th November 2020 10:03:07 pm                      *
+ * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
+ * Copyright - 2020                                                            *
+ ******************************************************************************/
 namespace __cxxabiv1 {
 /* guard variables */
 

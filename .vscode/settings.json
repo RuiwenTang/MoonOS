@@ -27,7 +27,7 @@
                 "Project: moon-os",
                 "File Created: <<filecreated('dddd, Do MMMM YYYY h:mm:ss a')>>",
                 "Author: <<author>> (<<authoremail>>)",
-                "Copyright - <<year>> <<copyrightholder>>"
+                "Copyright - <<year>>"
             ]
         }
     ]
