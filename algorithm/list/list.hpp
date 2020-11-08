@@ -31,6 +31,31 @@ struct List {
   void Add(self_type* node) { add_list_node(node, this, this->next); }
 
   void AddTail(self_type* node) { add_list_node(node, this->prev, this); }
+
+  void Splice(self_type* from, self_type* to) {
+    if (from->Empty()) {
+      return;
+    }
+
+    self_type* first = from->prev;
+    self_type* last = from->next;
+    from->EmptySelf();
+
+    splice_list(first, last, to);
+  }
+
+  void SpliceTail(self_type* from, self_type* to) {
+    if (from->Empty()) {
+      return;
+    }
+
+    self_type* first = from->next;
+    self_type* last = from->prev;
+
+    from->EmptySelf();
+    splice_list(first, last, to);
+  }
+
   void Delete(self_type* node) {
     self_type* p = node->prev;
     self_type* n = node->next;
@@ -40,11 +65,22 @@ struct List {
   }
 
  private:
+  void EmptySelf() { this->prev = this->next = this; }
   static void add_list_node(self_type* node, self_type* prev, self_type* next) {
     node->prev = prev;
     node->next = next;
     prev->next = node;
     next->prev = node;
+  }
+
+  static void splice_list(self_type* first, self_type* last, self_type* prev) {
+    self_type* next = prev->next;
+
+    first->prev = prev;
+    last->next = next;
+
+    prev->next = first;
+    next->prev = last;
   }
 };
 }  // namespace algorithm
