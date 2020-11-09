@@ -21,6 +21,8 @@ kernel_src = [
     'src/runtime.cc',
     'src/kprintf.hpp',
     'src/kprintf.cc',
+    'src/balloc/balloc.hpp',
+    'src/balloc/balloc.cc',
 ]
 
 srcs = [kernel_src, kernel_headers ]
