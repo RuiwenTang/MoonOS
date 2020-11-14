@@ -8,6 +8,8 @@
 #include <multiboot/multiboot.h>
 #include <stddef.h>
 
+#include <array.hpp>
+
 /**
  * @brief Bootstrap allocator
  *
@@ -40,26 +42,6 @@ class Balloc final {
    * @return size_t available memory size in bytes
    */
   size_t AvailableSize();
-  /**
-   * @brief Add memory range onto total range list
-   *
-   * @param from  begin address of available memory range
-   * @param to    end address of available memory range
-   */
-  void AddRange(uint64_t from, uint64_t to);
-  /**
-   * @brief Add memory range onto free range list
-   *
-   * @param from  begin address of available memory range
-   * @param to    end address of available memory range
-   */
-  void AddFreeRange(uint64_t from, uint64_t to);
-
- private:
-  Balloc() = default;
-  ~Balloc() = default;
-
-  void InitInternal();
 
  private:
   struct Range {
@@ -67,15 +49,33 @@ class Balloc final {
     uint64_t end = 0;
 
     Range() : begin(0), end(0) {}
+
+    Range& operator=(const Range& other) = default;
   };
+  Balloc() = default;
+  ~Balloc() = default;
+
+  void InitInternal();
 
   enum {
     BALLOC_MAX_RANGE_SZIE = 256,
   };
 
+  struct RangeVector {
+    algorithm::array<Range, BALLOC_MAX_RANGE_SZIE> ranges;
+    uint32_t size = 0;
+
+    RangeVector() = default;
+
+    Range& operator[](uint32_t index) { return ranges[index]; }
+    const Range& operator[](uint32_t index) const { return ranges[index]; }
+  };
+
+  static void AddToRange(RangeVector& ranges, uint64_t begin, uint64_t end);
+  static void RemoveFromRange(RangeVector& ranges, uint64_t begin,
+                              uint64_t end);
+
   multiboot_info_t* fMultibootInfo;
-  Range fAllRanges[BALLOC_MAX_RANGE_SZIE];
-  Range fFreeRanges[BALLOC_MAX_RANGE_SZIE];
-  size_t fCurrentRangSize = 0;
-  size_t fCurrentFreeRangeSize = 0;
+  RangeVector fAllRanges;
+  RangeVector fFreeRanges;
 };

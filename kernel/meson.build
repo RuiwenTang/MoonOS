@@ -68,5 +68,5 @@ executable('kernel.bin', sources: srcs,
     link_args: kernel_link_args,
     c_args: kernel_c_args,
     cpp_args: [kernel_c_args, kernel_cpp_args],
-    dependencies: [klibc_dep]
+    dependencies: [klibc_dep, algorithm]
     )
