@@ -7,6 +7,7 @@
 #include "balloc.hpp"
 
 #include <moon/memory.h>
+#include <stdint.h>
 #include <string.h>
 #ifdef DEBUG
 #include "../kprintf.hpp"
@@ -155,3 +156,10 @@ void Balloc::RemoveFromRange(RangeVector& ranges, uint64_t begin,
   }
 }
 
+uint64_t Balloc::AlignDown(uint64_t ptr, size_t align) {
+  return ptr - ptr % align;
+}
+
+uint64_t Balloc::AlignUp(uint64_t ptr, size_t align) {
+  return AlignDown(ptr + align - 1, align);
+}

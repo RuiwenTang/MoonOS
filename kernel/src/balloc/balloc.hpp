@@ -71,9 +71,13 @@ class Balloc final {
     const Range& operator[](uint32_t index) const { return ranges[index]; }
   };
 
+  uint64_t FindFreeRange(uint64_t from, uint64_t to, size_t size, size_t align);
   static void AddToRange(RangeVector& ranges, uint64_t begin, uint64_t end);
   static void RemoveFromRange(RangeVector& ranges, uint64_t begin,
                               uint64_t end);
+
+  static uint64_t AlignDown(uint64_t ptr, size_t align);
+  static uint64_t AlignUp(uint64_t ptr, size_t align);
 
   multiboot_info_t* fMultibootInfo;
   RangeVector fAllRanges;
