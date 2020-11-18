@@ -43,6 +43,15 @@ class Balloc final {
    */
   size_t AvailableSize();
 
+  /**
+   * @brief Alloc memory with fixed align menory
+   *
+   * @param size        required memory size
+   * @param align       memory align
+   * @return uintptr_t  pointer to the given memory address
+   */
+  uintptr_t Alloc(size_t size, size_t align);
+
  private:
   struct Range {
     uint64_t begin = 0;
@@ -70,6 +79,8 @@ class Balloc final {
     Range& operator[](uint32_t index) { return ranges[index]; }
     const Range& operator[](uint32_t index) const { return ranges[index]; }
   };
+
+  uintptr_t Alloc(uintptr_t from, uintptr_t to, size_t size, size_t align);
 
   uint64_t FindFreeRange(uint64_t from, uint64_t to, size_t size, size_t align);
   static void AddToRange(RangeVector& ranges, uint64_t begin, uint64_t end);

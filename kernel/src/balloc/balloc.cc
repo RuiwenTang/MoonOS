@@ -163,3 +163,18 @@ uint64_t Balloc::AlignDown(uint64_t ptr, size_t align) {
 uint64_t Balloc::AlignUp(uint64_t ptr, size_t align) {
   return AlignDown(ptr + align - 1, align);
 }
+
+uintptr_t Balloc::Alloc(size_t size, size_t align) {
+  return Alloc(0, UINTPTR_MAX, size, align);
+}
+
+uintptr_t Balloc::Alloc(uintptr_t from, uintptr_t to, size_t size,
+                        size_t align) {
+  uintptr_t addr = FindFreeRange(from, to, size, align);
+  if (addr == to) {
+    return 0;
+  }
+
+  RemoveFromRange(fFreeRanges, addr, addr + size);
+  return addr;
+}
