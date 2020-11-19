@@ -4,8 +4,9 @@
  * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
  * Copyright - 2020                                                            *
  ******************************************************************************/
-
+#ifndef HOST_BUILD
 #include <multiboot/multiboot.h>
+#endif
 #include <stddef.h>
 
 #include <array.hpp>
@@ -28,7 +29,9 @@ class Balloc final {
    *
    * @param mb_info
    */
+#ifndef HOST_BUILD
   void Init(multiboot_info_t* mb_info);
+#endif
 
   /**
    * @brief Get the total memory this system have
@@ -52,7 +55,9 @@ class Balloc final {
    */
   uintptr_t Alloc(size_t size, size_t align);
 
+#ifndef HOST_BUILD
  private:
+#endif
   struct Range {
     uint64_t begin = 0;
     uint64_t end = 0;
@@ -90,7 +95,9 @@ class Balloc final {
   static uint64_t AlignDown(uint64_t ptr, size_t align);
   static uint64_t AlignUp(uint64_t ptr, size_t align);
 
+#ifndef HOST_BUILD
   multiboot_info_t* fMultibootInfo;
+#endif
   RangeVector fAllRanges;
   RangeVector fFreeRanges;
 };

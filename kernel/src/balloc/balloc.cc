@@ -6,7 +6,9 @@
  ******************************************************************************/
 #include "balloc.hpp"
 
+#ifndef HOST_BUILD
 #include <moon/memory.h>
+#endif
 #include <stdint.h>
 #include <string.h>
 #ifdef DEBUG
@@ -19,7 +21,7 @@ Balloc* Balloc::Instance() {
   static Balloc gBalloc{};
   return &gBalloc;
 }
-
+#ifndef HOST_BUILD
 void Balloc::Init(multiboot_info_t* mb_info) {
   fMultibootInfo =
       static_cast<multiboot_info_t*>(va(reinterpret_cast<uintptr_t>(mb_info)));
@@ -78,12 +80,27 @@ void Balloc::InitInternal() {
   const uintptr_t kernel_begin = (uintptr_t)text_phys_begin;
   const uintptr_t kernel_end = (uintptr_t)bss_phys_end;
 
+#if defined(DEBUG) && defined(DEBUG_BALLOC)
+  kprintf("memory: kernel range: {%x -> %x}\n",
+          static_cast<uint32_t>(kernel_begin & 0xffffffff),
+          static_cast<uint32_t>(kernel_end & 0xffffffff));
+#endif
+
   RemoveFromRange(fFreeRanges, kernel_begin, kernel_end);
 
   // Drop the first 4Kb so that we can interpret 0 physical address as invalid
   AddToRange(fAllRanges, 0, 4096);
   RemoveFromRange(fFreeRanges, 0, 4096);
+
+#if defined(DEBUG) && defined(DEBUG_BALLOC)
+  for (size_t i = 0; i < fFreeRanges.size; i++) {
+    kprintf("memory free range {%x -> %x} \n",
+            static_cast<uint32_t>(fFreeRanges[i].begin),
+            static_cast<uint32_t>(fFreeRanges[i].end));
+  }
+#endif
 }
+#endif
 
 void Balloc::AddToRange(RangeVector& range, uint64_t start, uint64_t end) {
   uint64_t from = 0, to;
@@ -127,7 +144,7 @@ void Balloc::AddToRange(RangeVector& range, uint64_t start, uint64_t end) {
 void Balloc::RemoveFromRange(RangeVector& ranges, uint64_t begin,
                              uint64_t end) {
   size_t from = 0, to;
-  while (from != ranges.size && begin > ranges[from].begin) {
+  while (from != ranges.size && begin > ranges[from].end) {
     from++;
   }
 
@@ -177,4 +194,24 @@ uintptr_t Balloc::Alloc(uintptr_t from, uintptr_t to, size_t size,
 
   RemoveFromRange(fFreeRanges, addr, addr + size);
   return addr;
+}
+
+uint64_t Balloc::FindFreeRange(uint64_t from, uint64_t to, size_t size,
+                               size_t align) {
+  for (size_t i = 0; i < fFreeRanges.size; i++) {
+    if (fFreeRanges[i].begin >= to) {
+      break;
+    }
+
+    if (fFreeRanges[i].end <= from) {
+      continue;
+    }
+
+    const uint64_t addr = AlignUp(fFreeRanges[i].begin, align);
+    if (addr + size <= fFreeRanges[i].end) {
+      return addr;
+    }
+  }
+
+  return to;
 }

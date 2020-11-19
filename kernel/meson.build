@@ -70,3 +70,7 @@ executable('kernel.bin', sources: srcs,
     cpp_args: [kernel_c_args, kernel_cpp_args],
     dependencies: [klibc_dep, algorithm]
     )
+
+if get_option('build_test')
+    subdir('src/balloc')
+endif
