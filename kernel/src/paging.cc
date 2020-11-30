@@ -56,9 +56,9 @@ void Paging::InitVirtualMemory() {
   IDT::RegisterInterruptHandler(14, PageFaultHandler);
   set_page_frame(fKernelPML4 + PML4_GET_INDEX(VIRTUAL_BASE), pa(fKernelPDPT));
   fKernelPML4[PML4_GET_INDEX(VIRTUAL_BASE)] |= 0x3;
-
+  // 1GB page entry
   fKernelPDPT[PDPT_GET_INDEX(VIRTUAL_BASE)] = 0 | 0x3 | (1 << 7);
-
+  fKernelPDPT[0] = fKernelPDPT[PDPT_GET_INDEX(VIRTUAL_BASE)];
   asm("mov %%rax, %%cr3" ::"a"(pa(fKernelPML4)));
 #ifdef DEBUG
 

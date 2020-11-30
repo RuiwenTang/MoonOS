@@ -19,7 +19,10 @@ HAL* HAL::Instance() {
 void HAL::Init(multiboot_info_t* mb_info) { InitCore(mb_info); }
 
 void HAL::InitCore(multiboot_info_t* mb_info) {
-  Balloc::Instance()->Init(mb_info);
   IDT::Init();
   Paging::Instance()->InitVirtualMemory();
+  // init bootstrap memory allocator
+  Balloc::Instance()->Init(mb_info);
+
+
 }
