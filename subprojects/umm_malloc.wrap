@@ -1,0 +1,4 @@
+[wrap-git]
+directory = umm_malloc
+url = https://github.com/RuiwenTang/umm_malloc.git
+revision = master

@@ -17,6 +17,11 @@
 
 #define DEBUG_BALLOC
 
+#define KERNEL_HEAP_SIZE 0x9E000
+
+void* UMM_MALLOC_CFG_HEAP_ADDR = 0;
+uint32_t UMM_MALLOC_CFG_HEAP_SIZE = KERNEL_HEAP_SIZE;
+
 Balloc* Balloc::Instance() {
   static Balloc gBalloc{};
   return &gBalloc;
@@ -27,6 +32,20 @@ void Balloc::Init(multiboot_info_t* mb_info) {
       static_cast<multiboot_info_t*>(va(reinterpret_cast<uintptr_t>(mb_info)));
 
   InitInternal();
+
+  // init umm_malloc
+  UMM_MALLOC_CFG_HEAP_ADDR =
+      reinterpret_cast<void*>(va(Alloc(KERNEL_HEAP_SIZE, 0x1000)));
+
+  
+
+#if defined(DEBUG) && defined(DEBUG_BALLOC)
+  for (size_t i = 0; i < fFreeRanges.size; i++) {
+    kprintf("memory free range {%x -> %x} \n",
+            static_cast<uint32_t>(fFreeRanges[i].begin),
+            static_cast<uint32_t>(fFreeRanges[i].end));
+  }
+#endif
 }
 
 void Balloc::InitInternal() {
@@ -91,14 +110,6 @@ void Balloc::InitInternal() {
   // Drop the first 4Kb so that we can interpret 0 physical address as invalid
   AddToRange(fAllRanges, 0, 4096);
   RemoveFromRange(fFreeRanges, 0, 4096);
-
-#if defined(DEBUG) && defined(DEBUG_BALLOC)
-  for (size_t i = 0; i < fFreeRanges.size; i++) {
-    kprintf("memory free range {%x -> %x} \n",
-            static_cast<uint32_t>(fFreeRanges[i].begin),
-            static_cast<uint32_t>(fFreeRanges[i].end));
-  }
-#endif
 }
 #endif
 

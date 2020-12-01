@@ -1,4 +1,6 @@
 
+umm_malloc = subproject('umm_malloc').get_variable('umm_malloc_dep')
+
 kernel_headers = [
     'include/moon/hal.hpp',
     'include/moon/memory.h',
@@ -6,6 +8,7 @@ kernel_headers = [
     'include/moon/idt.hpp',
     'include/moon/io.hpp',
     'include/moon/paging.hpp',
+    'include/moon/timer.hpp',
     'include/multiboot/multiboot.h',
 ]
 
@@ -19,6 +22,7 @@ kernel_src = [
     'src/hal.cc',
     'src/paging.cc',
     'src/runtime.cc',
+    'src/timer.cc',
     'src/kprintf.hpp',
     'src/kprintf.cc',
     'src/balloc/balloc.hpp',
@@ -68,7 +72,7 @@ executable('kernel.bin', sources: srcs,
     link_args: kernel_link_args,
     c_args: kernel_c_args,
     cpp_args: [kernel_c_args, kernel_cpp_args],
-    dependencies: [klibc_dep, algorithm]
+    dependencies: [klibc_dep, algorithm, umm_malloc]
     )
 
 if get_option('build_test')
