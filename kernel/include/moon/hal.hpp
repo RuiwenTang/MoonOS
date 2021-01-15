@@ -18,4 +18,6 @@ class HAL final {
   HAL() = default;
   ~HAL() = default;
   void InitCore(multiboot_info_t* mb_info);
+
+  void InitExtra();
 };

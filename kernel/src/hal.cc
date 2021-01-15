@@ -4,13 +4,13 @@
  * Author: tangruiwen (tangruiwen1989@gmail.com)                               *
  * Copyright - 2020                                                            *
  ******************************************************************************/
+#include <moon/acpi.hpp>
 #include <moon/hal.hpp>
 #include <moon/idt.hpp>
 #include <moon/paging.hpp>
 #include <moon/timer.hpp>
 
 #include "balloc/balloc.hpp"
-
 #include "kprintf.hpp"
 
 HAL* HAL::Instance() {
@@ -19,7 +19,10 @@ HAL* HAL::Instance() {
   return &hal;
 }
 
-void HAL::Init(multiboot_info_t* mb_info) { InitCore(mb_info); }
+void HAL::Init(multiboot_info_t* mb_info) {
+  InitCore(mb_info);
+  InitExtra();
+}
 
 void HAL::InitCore(multiboot_info_t* mb_info) {
   IDT::Init();
@@ -29,3 +32,5 @@ void HAL::InitCore(multiboot_info_t* mb_info) {
   Balloc::Instance()->Init(mb_info);
   Timer::Instance()->Initialize(1000);
 }
+
+void HAL::InitExtra() { ACPI::Init(); }

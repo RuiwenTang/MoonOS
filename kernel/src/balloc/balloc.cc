@@ -15,9 +15,9 @@
 #include "../kprintf.hpp"
 #endif
 
-#define DEBUG_BALLOC
+// #define DEBUG_BALLOC
 
-#define KERNEL_HEAP_SIZE 0x9E000
+#define KERNEL_HEAP_SIZE 0x100000
 
 void* UMM_MALLOC_CFG_HEAP_ADDR = 0;
 uint32_t UMM_MALLOC_CFG_HEAP_SIZE = KERNEL_HEAP_SIZE;
@@ -36,8 +36,6 @@ void Balloc::Init(multiboot_info_t* mb_info) {
   // init umm_malloc
   UMM_MALLOC_CFG_HEAP_ADDR =
       reinterpret_cast<void*>(va(Alloc(KERNEL_HEAP_SIZE, 0x1000)));
-
-  
 
 #if defined(DEBUG) && defined(DEBUG_BALLOC)
   for (size_t i = 0; i < fFreeRanges.size; i++) {
@@ -106,6 +104,12 @@ void Balloc::InitInternal() {
 #endif
 
   RemoveFromRange(fFreeRanges, kernel_begin, kernel_end);
+  /**
+   * remove first 1MB physic memory since acip use some memory range to do
+   * memory mapping
+   *
+   */
+  RemoveFromRange(fFreeRanges, 0, 0x100000);
 
   // Drop the first 4Kb so that we can interpret 0 physical address as invalid
   AddToRange(fAllRanges, 0, 4096);

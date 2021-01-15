@@ -1,5 +1,5 @@
 {
-    "ccls.launch.command": "/Users/tangruiwen/WorkSpace/github/ccls/Release/ccls",
+    "ccls.launch.command": "/Users/tangruiwen/WorkSpace/github/ccls/Release2/ccls",
     "ccls.cache.directory": "${workspaceFolder}/.vscode/.ccls-cache",
     "ccls.misc.compilationDatabaseDirectory": "${workspaceFolder}/out/Debug",
     "ccls.highlight.function.face": ["enabled"],
