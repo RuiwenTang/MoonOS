@@ -1,10 +1,14 @@
 {
-    "ccls.launch.command": "/Users/tangruiwen/WorkSpace/github/ccls/Release2/ccls",
+    "ccls.launch.command": "/usr/local/bin/ccls",
     "ccls.cache.directory": "${workspaceFolder}/.vscode/.ccls-cache",
-    "ccls.misc.compilationDatabaseDirectory": "${workspaceFolder}/out/Debug",
+    "ccls.misc.compilationDatabaseDirectory": "${workspaceFolder}/builddir",
     "ccls.highlight.function.face": ["enabled"],
     "ccls.highlight.type.face": ["enabled"],
     "ccls.highlight.variable.face": ["enabled"],
+    "C_Cpp.autocomplete": "Disabled",
+    "C_Cpp.formatting": "Disabled",
+    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.intelliSenseEngine": "Disabled",
     "psi-header.config": {
         "license": "MIT",
         "forceToTop": true,
