@@ -5,7 +5,15 @@
  * Copyright - 2020                                                            *
  ******************************************************************************/
 
+#include <moon/memory.h>
+
 #include <moon/acpi.hpp>
+
+#define DEBUG_ACPI 1
+
+#if DEBUG_ACPI
+#include "kprintf.hpp"
+#endif
 
 uint8_t ACPI::fProcessors[256];
 int ACPI::fProcessorCount = 1;
@@ -49,7 +57,15 @@ void ACPI::Init() {
     goto success;
   }
 
+  // search first Kb for RSDP, which is aligned on 16 byte boundary
   for (int i = 0; i < 0x7BFF; i += 16) {
+    if (memcmp((void*)VA(i), fSignature, 8) == 0) {
+      fDesc = reinterpret_cast<acpi_xsdp_t*>(VA(i));
+#if DEBUG_ACPI
+      kprintf("ACPI find RSDP at %x\n", fDesc);
+#endif
+      goto success;
+    }
   }
 
 success:
