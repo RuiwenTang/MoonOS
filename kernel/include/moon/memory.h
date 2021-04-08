@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 #define VA(x) ((void*)((uintptr_t)x + VIRTUAL_BASE))
-#define PA(x) ((uintptr_t)x - VIRTUAL_BASE);
+#define PA(x) ((uintptr_t)x - VIRTUAL_BASE)
 
 static inline void* va(uintptr_t phys) { return VA(phys); }
 

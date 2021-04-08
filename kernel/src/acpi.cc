@@ -58,6 +58,7 @@ void ACPI::Init() {
   }
 
   // search first Kb for RSDP, which is aligned on 16 byte boundary
+  // more info see https://wiki.osdev.org/RSDP
   for (int i = 0; i < 0x7BFF; i += 16) {
     if (memcmp((void*)VA(i), fSignature, 8) == 0) {
       fDesc = reinterpret_cast<acpi_xsdp_t*>(VA(i));
@@ -68,7 +69,42 @@ void ACPI::Init() {
     }
   }
 
+  for (int i = 0x80000; i <= 0x9FFFF; i += 16) {
+    if (memcmp((void*)VA(i), fSignature, 8) == 0) {
+      fDesc = reinterpret_cast<acpi_xsdp_t*>(VA(i));
+#if DEBUG_ACPI
+      kprintf("ACPI find RSDP at %x\n", PA(fDesc));
+#endif
+      goto success;
+    }
+  }
+
+  for (int i = 0xE0000; i <= 0xFFFFF; i += 16) {
+    if (memcmp((void*)VA(i), fSignature, 8) == 0) {
+      fDesc = reinterpret_cast<acpi_xsdp_t*>(VA(i));
+#if DEBUG_ACPI
+      kprintf("ACPI find RSDP at %x\n", PA(fDesc));
+#endif
+      goto success;
+    }
+  }
+  // no acpi complaiant
+  // TODO panic with this failure
+
 success:
+
+  if (fDesc->revision == 2) {
+    fRSDTHeader = reinterpret_cast<acpi_rsdt_t*>(VA(fDesc->xsdt));
+    fXSDTHeader = reinterpret_cast<acpi_xsdt_t*>(VA(fDesc->xsdt));
+#if DEBUG_ACPI
+    kprintf("ACPI with version 2.0\n");
+#endif
+  } else {
+    fRSDTHeader = reinterpret_cast<acpi_rsdt_t*>(VA(fDesc->rsdt));
+#if DEBUG_ACPI
+    kprintf("ACPI with version 1.0\n");
+#endif
+  }
 
   return;
 }
