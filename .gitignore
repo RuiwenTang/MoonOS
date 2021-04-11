@@ -3,3 +3,4 @@ builddir
 .vscode/.ccls-cache
 subprojects/*
 !subprojects/*.wrap
+.ccls

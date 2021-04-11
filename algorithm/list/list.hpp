@@ -7,80 +7,188 @@
 
 #pragma once
 
+#include <stddef.h>
+
 namespace algorithm {
+
+template <typename T>
+struct ListNode {
+  using self_type = ListNode<T>;
+  self_type* next = nullptr;
+  self_type* prev = nullptr;
+  T obj;
+
+  ListNode(T const& obj) : next{nullptr}, prev{nullptr}, obj{obj} {}
+};
 
 /**
  * @brief Base class for linked list
  *
  * @tparam T
  */
-template <class T>
-struct List {
-  using self_type = List<T>;
+template <typename T>
+class List {
+  using node_type = ListNode<T>;
 
-  T data;
-  self_type* next;
-  self_type* prev;
+ public:
+  List() : mFront{nullptr}, mBack{nullptr}, mNum{0} {}
 
-  List() : data(), next(this), prev(this) {}
-  List(const T& v) : data(v), next(this), prev(this) {}
-  virtual ~List() = default;
+  ~List() { clear(); }
 
-  bool Empty() const { return next == this && prev == this; }
+  void clear() {
+    node_type* node = mFront;
+    while (node && node->next) {
+      node_type* n = node->next;
+      delete node;
+      node = n;
+    }
 
-  void Add(self_type* node) { add_list_node(node, this, this->next); }
+    mFront = nullptr;
+    mBack = nullptr;
+    mNum = 0;
+  }
 
-  void AddTail(self_type* node) { add_list_node(node, this->prev, this); }
+  void addBack(T const& obj) {
+    node_type* node = new node_type(obj);
 
-  void Splice(self_type* from, self_type* to) {
-    if (from->Empty()) {
+    if (!mFront) {
+      mFront = node;
+    } else if (mBack) {
+      mBack->next = node;
+      node->prev = mBack;
+    }
+
+    mBack = node;
+    mNum++;
+  }
+
+  void addFront(T const& obj) {
+    node_type* node = new node_type(obj);
+
+    if (!mBack) {
+      mBack = node;
+    } else {
+      mFront->prev = node;
+      node->next = mFront;
+    }
+    mFront = node;
+    mNum++;
+  }
+
+  void insert(T const& obj, size_t pos) {
+    if (mNum == 0) {
+      addBack(obj);
       return;
     }
 
-    self_type* first = from->prev;
-    self_type* last = from->next;
-    from->EmptySelf();
-
-    splice_list(first, last, to);
-  }
-
-  void SpliceTail(self_type* from, self_type* to) {
-    if (from->Empty()) {
+    if (pos == 0) {
+      addFront(obj);
       return;
     }
 
-    self_type* first = from->next;
-    self_type* last = from->prev;
+    node_type* current = mFront;
+    for (size_t i = 0; i < pos && i < mNum && current->next != nullptr; i++) {
+      current = current->next;
+    }
 
-    from->EmptySelf();
-    splice_list(first, last, to);
+    node_type* node = new node_type(obj);
+    node->prev = current;
+    node->next = current->next;
+
+    current->next->prev = node;
+    current->next = node;
+
+    mNum++;
   }
 
-  void Delete(self_type* node) {
-    self_type* p = node->prev;
-    self_type* n = node->next;
+  node_type* get(size_t pos) {
+    if (pos >= mNum) {
+      return nullptr;
+    }
 
-    p->next = n;
-    n->prev = p;
+    node_type* current = mFront;
+
+    for (size_t i = 0; i < pos && i < mNum && current->next != nullptr; i++) {
+      current = current->next;
+    }
+
+    return current;
+  }
+
+  void replace(size_t pos, T obj) {
+    if (pos >= mNum) {
+      return;
+    }
+
+    node_type* current = mFront;
+    for (size_t i = 0; i < pos; i++) {
+      current = current->next;
+    }
+
+    current->obj = obj;
+  }
+
+  void remove(size_t pos) {
+    if (pos >= mNum) {
+      return;
+    }
+    node_type* current = mFront;
+
+    for (size_t i = 0; i < pos; i++) {
+      current = current->next;
+    }
+
+    removeNode(current);
+  }
+
+  void remove(T const& obj) {
+    if (mNum == 0) {
+      return;
+    }
+
+    node_type* current = mFront;
+    while (current && current != mBack && current->obj != obj) {
+      current = current->next;
+    }
+
+    if (current->obj == obj) {
+      removeNode(current);
+    }
+  }
+
+  size_t size() const { return mNum; }
+
+  node_type* front() { return mFront; }
+
+  node_type* back() { return mBack; }
+
+ private:
+  void removeNode(node_type* node) {
+    if (mFront == node) {
+      mFront = node->next;
+    }
+    if (mBack == node) {
+      mBack = node->prev;
+    }
+    if (node->next) {
+      node->next->prev = node->prev;
+    }
+    if (node->prev) {
+      node->prev->next = node->next;
+    }
+
+    delete node;
+    mNum--;
+
+    if (mNum == 0) {
+      mFront = mBack = nullptr;
+    }
   }
 
  private:
-  void EmptySelf() { this->prev = this->next = this; }
-  static void add_list_node(self_type* node, self_type* prev, self_type* next) {
-    node->prev = prev;
-    node->next = next;
-    prev->next = node;
-    next->prev = node;
-  }
-
-  static void splice_list(self_type* first, self_type* last, self_type* prev) {
-    self_type* next = prev->next;
-
-    first->prev = prev;
-    last->next = next;
-
-    prev->next = first;
-    next->prev = last;
-  }
+  node_type* mFront;
+  node_type* mBack;
+  size_t mNum;
 };
+
 }  // namespace algorithm
