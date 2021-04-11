@@ -11,6 +11,8 @@
 #include <lai/helpers/pci.h>
 #include <stdint.h>
 
+#include <list/list.hpp>
+
 struct ACPI_MADT {
   acpi_header_t header;
   uint32_t localAPICAddress;
@@ -136,7 +138,7 @@ class ACPI final {
   static void Reset();
 
  private:
-  void* FindSDT(const char* signature, int index);
+  static void* FindSDT(const char* signature, int index);
 
  private:
   static uint8_t fProcessors[];
@@ -148,4 +150,5 @@ class ACPI final {
   static acpi_fadt_t* fFadt;
   static PCI_MCFG* fMCFG;
   static char fOEM[];
+  static algorithm::List<ISO>* fISOList;
 };

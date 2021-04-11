@@ -24,6 +24,7 @@ acpi_xsdt_t* ACPI::fXSDTHeader = nullptr;
 acpi_fadt_t* ACPI::fFadt = nullptr;
 PCI_MCFG* ACPI::fMCFG = nullptr;
 char ACPI::fOEM[7];
+algorithm::List<ISO>* ACPI::fISOList = nullptr;
 
 void* ACPI::FindSDT(const char* signature, int index) {
   int entries = 0;
@@ -46,9 +47,17 @@ void* ACPI::FindSDT(const char* signature, int index) {
   int _index = 0;
 
   if (memcmp("DSDT", signature, 4) == 0) {
-    return (void*)0;
+    return (void*)VA(fFadt->dsdt);
   }
 
+  for (int i = 0; i < entries; i++) {
+    acpi_header_t* h = reinterpret_cast<acpi_header_t*>(VA(getEntry(i)));
+    if (memcmp(h->signature, signature, 4) == 0 && _index == index) {
+      return h;
+    }
+  }
+
+  // No SDT found
   return 0;
 }
 
@@ -105,6 +114,22 @@ success:
     kprintf("ACPI with version 1.0\n");
 #endif
   }
+
+  fISOList = new algorithm::List<ISO>();
+
+  memcpy(fOEM, fRSDTHeader->header.oem, 6);
+  fOEM[6] = 0;
+#if DEBUG_ACPI
+  kprintf("ACPI OEM: %s \n", fOEM);
+#endif
+
+  fFadt = reinterpret_cast<acpi_fadt_t*>(FindSDT("FACP", 0));
+
+#if DEBUG_ACPI
+  if (fFadt) {
+    kprintf("FIND FADT at %x\n", PA(fFadt));
+  }
+#endif
 
   return;
 }
