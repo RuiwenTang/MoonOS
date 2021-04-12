@@ -234,7 +234,7 @@ trampoline:
     movq $start64, %rax
     jmpq *%rax
 
-.text
+.section .text
 start64:
     /**
      * We are now in 64 bit long mode, and first of all we want to drop

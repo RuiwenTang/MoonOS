@@ -1,7 +1,8 @@
 
 umm_malloc = subproject('umm_malloc').get_variable('umm_malloc_dep')
 
-lai_dep = subproject('lai').get_variable('dependency')
+lai_inc = subproject('lai').get_variable('includes')
+lai_source = subproject('lai').get_variable('sources')
 
 kernel_headers = [
     'include/moon/acpi.hpp',
@@ -62,6 +63,7 @@ kernel_cpp_args = [
 
 
 kernel_link_args = [
+    '-m64',
     '-T', meson.current_source_dir() + '/link64.ld',
     '-lgcc',
     '-ffreestanding',
@@ -71,12 +73,12 @@ kernel_link_args = [
     'max-page-size=0x1000'
 ]
 
-executable('kernel.bin', sources: srcs,
-    include_directories: kernel_incs,
+executable('kernel.bin', sources: [srcs, lai_source],
+    include_directories: [kernel_incs, lai_inc],
     link_args: kernel_link_args,
     c_args: kernel_c_args,
     cpp_args: [kernel_c_args, kernel_cpp_args],
-    dependencies: [klibc_dep, algorithm, umm_malloc, lai_dep]
+    dependencies: [klibc_dep, algorithm, umm_malloc]
     )
 
 if get_option('build_test')

@@ -8,6 +8,9 @@
 #include <moon/memory.h>
 
 #include <moon/acpi.hpp>
+#include <moon/io.hpp>
+
+#include "umm_malloc.h"
 
 #define DEBUG_ACPI 1
 
@@ -131,5 +134,98 @@ success:
   }
 #endif
 
+  // close interrupt
+  asm("cli");
+
+  lai_set_acpi_revision(fRSDTHeader->header.revision);
+  lai_create_namespace();
+
+  ReadMADT();
+
+  // Attemp to find MCFG table for PCI
+  fMCFG = reinterpret_cast<PCI_MCFG*>(FindSDT("MCFG", 0));
+  asm("sti");
   return;
+}
+
+int ACPI::ReadMADT() { return 0; }
+
+extern "C" {
+
+void* laihost_scan(const char* signature, size_t index) {
+  return ACPI::FindSDT(signature, index);
+}
+
+void laihost_log(int level, const char* msg) {
+  const char* log_level = nullptr;
+  switch (level) {
+    case LAI_WARN_LOG:
+      log_level = "lai_warning";
+      break;
+    case LAI_DEBUG_LOG:
+      log_level = "lai_debug";
+      break;
+  }
+#if DEBUG_ACPI
+  kprintf("%s: ", log_level);
+  kprintf("%s\n", msg);
+#endif
+}
+
+void laihost_panic(const char* msg) {
+#if DEBUG_ACPI
+  kprintf("ACPI Error: %s\n", msg);
+  for (;;)
+    ;
+#endif
+}
+
+void* laihost_malloc(size_t sz) { return umm_malloc(sz); }
+
+void* laihost_realloc(void* addr, size_t sz, size_t /* oldsz */) {
+  return umm_realloc(addr, sz);
+}
+
+void laihost_free(void* addr, size_t /* sz */) { umm_free(addr); }
+
+void* laihost_map(size_t address, size_t count) {
+  // TODO implement kernel map
+  (void)address;
+  (void)count;
+  return nullptr;
+}
+
+void laihost_unmap(void* ptr, size_t count) {
+  (void)ptr;
+  (void)count;
+  // stub
+}
+
+void laihost_outb(uint16_t port, uint8_t val) { IO::Write8(port, val); }
+
+void laihost_outw(uint16_t port, uint16_t val) { IO::Write16(port, val); }
+
+void laihost_outd(uint16_t port, uint32_t val) { IO::Write32(port, val); }
+
+uint8_t laihost_inb(uint16_t port) { return IO::Read8(port); }
+
+uint16_t laihost_inw(uint16_t port) { return IO::Read16(port); }
+
+uint32_t laihost_ind(uint16_t port) { return IO::Read32(port); }
+
+void laihost_sleep(uint64_t ms) {
+  // TODO implement
+  (void)ms;
+}
+
+void laihost_pci_writew(uint16_t seg, uint8_t bus, uint8_t slot, uint8_t fun,
+                        uint16_t offset, uint16_t val) {
+  // TODO implement
+  (void)seg;
+  (void)bus;
+  (void)slot;
+  (void)fun;
+  (void)offset;
+  (void)val;
+}
 }

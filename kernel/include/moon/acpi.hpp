@@ -137,8 +137,9 @@ class ACPI final {
   static void Init();
   static void Reset();
 
- private:
   static void* FindSDT(const char* signature, int index);
+
+  static int ReadMADT();
 
  private:
   static uint8_t fProcessors[];
