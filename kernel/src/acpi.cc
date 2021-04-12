@@ -27,7 +27,7 @@ acpi_xsdt_t* ACPI::fXSDTHeader = nullptr;
 acpi_fadt_t* ACPI::fFadt = nullptr;
 PCI_MCFG* ACPI::fMCFG = nullptr;
 char ACPI::fOEM[7];
-algorithm::List<ISO>* ACPI::fISOList = nullptr;
+algorithm::List<ISO*>* ACPI::fISOList = nullptr;
 
 void* ACPI::FindSDT(const char* signature, int index) {
   int entries = 0;
@@ -118,7 +118,7 @@ success:
 #endif
   }
 
-  fISOList = new algorithm::List<ISO>();
+  fISOList = new algorithm::List<ISO*>();
 
   memcpy(fOEM, fRSDTHeader->header.oem, 6);
   fOEM[6] = 0;
@@ -142,13 +142,60 @@ success:
 
   ReadMADT();
 
+  kprintf("proc count = %d\n", fProcessorCount);
   // Attemp to find MCFG table for PCI
   fMCFG = reinterpret_cast<PCI_MCFG*>(FindSDT("MCFG", 0));
   asm("sti");
   return;
 }
 
-int ACPI::ReadMADT() { return 0; }
+int ACPI::ReadMADT() {
+  void* madt = FindSDT("APIC", 0);
+  if (!madt) {
+#if DEBUG_ACPI
+    kprintf("Could Not Find MADT\n");
+#endif
+    return -1;
+  }
+
+  ACPI_MADT* madtHeader = reinterpret_cast<ACPI_MADT*>(madt);
+  uintptr_t madt_end =
+      reinterpret_cast<uintptr_t>(madt) + madtHeader->header.length;
+
+  uintptr_t madt_entry = reinterpret_cast<uintptr_t>(madt) + sizeof(ACPI_MADT);
+
+  while (madt_entry < madt_end) {
+    ACPI_MADT_Entry* entry = reinterpret_cast<ACPI_MADT_Entry*>(madt_entry);
+    switch (entry->type) {
+      case 0: {
+        LocalAPIC* local_apic = reinterpret_cast<LocalAPIC*>(entry);
+        if (local_apic->flags & 0x3) {
+          if (local_apic->apicID == 0) {
+            // find BSP
+            break;
+          }
+          fProcessors[fProcessorCount++] = local_apic->apicID;
+#if DEBUG_ACPI
+          kprintf("[ACPI] Found Processor, APIC ID: %d\n", local_apic->apicID);
+#endif
+        }
+      } break;
+      case 1: {
+        IOAPIC* io_apic = reinterpret_cast<IOAPIC*>(entry);
+#if DEBUG_ACPI
+        kprintf("[ACPI] Found I/O APIC, Address: %x\n", io_apic->address);
+#endif
+        // TODO set APIC IO Base
+      } break;
+      case 2: {
+        ISO* interrupt_source_override = reinterpret_cast<ISO*>(entry);
+        fISOList->addBack(interrupt_source_override);
+      } break;
+    }
+    madt_entry += entry->length;
+  }
+  return 0;
+}
 
 extern "C" {
 

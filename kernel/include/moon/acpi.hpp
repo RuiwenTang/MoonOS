@@ -151,5 +151,5 @@ class ACPI final {
   static acpi_fadt_t* fFadt;
   static PCI_MCFG* fMCFG;
   static char fOEM[];
-  static algorithm::List<ISO>* fISOList;
+  static algorithm::List<ISO*>* fISOList;
 };
