@@ -141,8 +141,9 @@ success:
   lai_create_namespace();
 
   ReadMADT();
-
+#if DEBUG_ACPI
   kprintf("proc count = %d\n", fProcessorCount);
+#endif
   // Attemp to find MCFG table for PCI
   fMCFG = reinterpret_cast<PCI_MCFG*>(FindSDT("MCFG", 0));
   asm("sti");
