@@ -68,6 +68,22 @@ class Paging final {
     page_t* virt;
   };
 
+  /**
+   * @brief
+   *  Each process will have a maximum of 96GB virtual memory.
+   */
+  struct PageMap {
+    pdpt_entry_t* pdpt;
+    /// sizeof [64]
+    pd_entry_t** page_dirs;
+    uint64_t* page_dirs_phys;
+    /// [64][TABLES_PER_DIR]
+    page_t*** pate_tables;
+    pml4_entry_t* pml4;
+    uint64_t pdpt_phys;
+    uint64_t pml4_phys;
+  };
+
  public:
   static Paging* Instance();
   void InitVirtualMemory();
