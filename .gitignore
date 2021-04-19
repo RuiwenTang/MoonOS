@@ -4,3 +4,6 @@ builddir
 subprojects/*
 !subprojects/*.wrap
 .ccls
+.ccls-cache/*
+compile_commands.json
+
